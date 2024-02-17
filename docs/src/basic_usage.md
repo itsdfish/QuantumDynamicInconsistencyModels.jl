@@ -11,7 +11,7 @@ The quantum prisoner's dilemma model (QPDM) generates predictions for three cond
 3. Player 1 is not informed of the action of player 2
 
 ```@example 
-using QuantumPrisonersDilemmaModel 
+using QuantumDynamicInconsistencyModels 
 model = QPDM(;μd=.51, γ=2.09)
 predict(model)
 ```
@@ -20,7 +20,7 @@ predict(model)
 
 The code block below demonstrates how to generate simulated data from the model using `rand`. In the example, we will generate 100 simulated trials for each condition. 
 ```@example 
-using QuantumPrisonersDilemmaModel 
+using QuantumDynamicInconsistencyModels 
 model = QPDM(;μd=.51, γ=2.09)
 data = rand(model, 100)
 ```
@@ -29,7 +29,7 @@ data = rand(model, 100)
 
 The log likelihood of data can be evaluated using `logpdf`. In the code block below, we generate simulated data and evaluate the logpdf: 
 ```@example 
-using QuantumPrisonersDilemmaModel 
+using QuantumDynamicInconsistencyModels 
 model = QPDM(;μd=.51, γ=2.09)
 n_trials = 100
 data = rand(model, n_trials)

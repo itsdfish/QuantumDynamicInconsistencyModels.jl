@@ -8,7 +8,7 @@ First, we will load the required packages below.
 
 ```julia
 using Pigeons
-using QuantumPrisonersDilemmaModel
+using QuantumDynamicInconsistencyModels
 using Random
 using StatsPlots
 using Turing
@@ -18,11 +18,20 @@ using Turing
 
 The next step is to generate some simulated data from which the parameters can be estimated. In the code block below, the utility parameter $\mu_d$ is set to one and the entanglement parameter is set to $\gamma = 2$.  A total of 50 trials is generated for each of the three conditions. The resulting values represent the number of defections per condition out of 50.
 ```julia
-Random.seed!(65)
-n = 50
-parms = (μd=1.0, γ=2.0)
-model = QPDM(;parms...)
-data = rand(model, n)
+Random.seed!(8744)
+ parms = (
+    α = .9, 
+    λ = 2,
+    w_win = .5,
+    γ = 2.5
+)
+
+outcomes1 = [[2,-1],[5,-3],[.5,-.25],[2,-2],[5,-5],[.5,-.50]]
+outcomes2 = [[2,-1],[5,-3],[.5,-.25],[2,-2],[5,-5],[.5,-.50]]
+
+n = 10
+model = QDIM(; parms...)
+data = rand(model, outcomes1, outcomes2, n)
 ```
 
 ## Define Turing Model
@@ -30,10 +39,12 @@ data = rand(model, n)
 The next step is to define a Turing model with the `@model` macro. For simplicity, we will fix the utility parameter $\mu_d=1$ and set the prior of the entanglement parameter to $\gamma \sim \mathrm{normal}(0,3)$. 
 
 ```julia 
-@model function turing_model(data, parms)
+@model function turing_model(data, outcomes1, outcomes2, n, parms)
     γ ~ Normal(0, 3)
-    data ~ QPDM(;parms..., γ)
+    data ~ QDIM(; parms..., γ)
 end
+_data = (outcomes1,outcomes2,data,n)
+sampler = turing_model(_data, outcomes1, outcomes2, n, parms)
 ```
 
 ## Estimate Parameters
@@ -41,7 +52,7 @@ end
 To estimate the parameters, we need to pass the Turing model to `pigeons`. The second command converts the output to an `MCMCChain` object, which can be used for plotting
 ```julia
 pt = pigeons(
-    target=TuringLogPotential(turing_model((n, data), parms)), 
+    target=TuringLogPotential(sampler), 
     record=[traces])
 samples = Chains(sample_array(pt), ["γ","LL"])
 ```
@@ -50,16 +61,16 @@ The trace of the `pigeon`'s sampler is given below:
 ────────────────────────────────────────────────────────────────────────────
   scans        Λ      log(Z₁/Z₀)   min(α)     mean(α)    min(αₑ)   mean(αₑ) 
 ────────── ────────── ────────── ────────── ────────── ────────── ──────────
-        2       1.58      -11.3      0.332      0.825          1          1 
-        4      0.529      -10.1      0.522      0.941          1          1 
-        8       1.11      -9.43      0.501      0.877          1          1 
-       16       1.37      -9.89       0.66      0.847          1          1 
-       32       1.48      -10.3      0.772      0.836          1          1 
-       64       1.46      -10.1      0.735      0.837          1          1 
-      128       1.44      -10.4      0.776       0.84          1          1 
-      256       1.49      -10.4      0.772      0.834      0.999          1 
-      512       1.46      -10.3      0.816      0.838      0.999          1 
- 1.02e+03       1.48      -10.3      0.817      0.836      0.999          1 
+        2       1.57      -32.7      0.443      0.826          1          1 
+        4      0.622      -31.7      0.692      0.931          1          1 
+        8       1.07      -31.4      0.574      0.881      0.923      0.991 
+       16        0.9      -31.7      0.757        0.9       0.96      0.996 
+       32      0.837      -31.7      0.719      0.907       0.99      0.998 
+       64       1.06      -31.7       0.72      0.882       0.99      0.998 
+      128       1.02      -31.9      0.811      0.887       0.99      0.997 
+      256      0.986      -31.9       0.86       0.89       0.99      0.997 
+      512      0.968      -31.9      0.873      0.892      0.992      0.998 
+ 1.02e+03      0.998      -31.9      0.874      0.889      0.994      0.998 
 ────────────────────────────────────────────────────────────────────────────
 ```
 

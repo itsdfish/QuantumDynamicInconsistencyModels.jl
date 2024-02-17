@@ -1,4 +1,4 @@
-# QuantumPrisonersDilemmaModel.jl
+# QuantumDynamicInconsistencyModels.jl
 
 This package contains code for a quantum cognition model of inteference effects in the prisoner's dilemma. 
 
@@ -7,7 +7,7 @@ This package contains code for a quantum cognition model of inteference effects 
 This package is not registered in Julia's general registry. However, there two ways you can install the package. Option 1 is to install without version control. In the REPL, use `]` to switch to the package mode and enter the following:
 
 ```julia
-add https://github.com/itsdfish/QuantumPrisonersDilemmaModel.jl
+add https://github.com/itsdfish/QuantumDynamicInconsistencyModels.jl
 ```
 Option 2 is to install via a custom registry. The advantage of this approach is that you have more control over version control, expecially if you are using a project-specfic environment. 
 
@@ -15,7 +15,7 @@ Option 2 is to install via a custom registry. The advantage of this approach is 
 2. Add the package by typing `]` into the REPL and then typing (or pasting):
 
 ```julia
-add QuantumPrisonersDilemmaModel
+add QuantumDynamicInconsistencyModels
 ```
 
 # References 

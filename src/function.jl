@@ -103,7 +103,9 @@ function make_H2(γ)
 	return H
 end
 
-rand(model::AbstractQDIM; t = π / 2) = rand(model, 1; t = π / 2)
+function rand(model::AbstractQDIM, outcomes1, outcomes2; t = π / 2)
+    return rand(model, outcomes1, outcomes2, 1; t)
+end
 
 """
     rand(model::AbstractQDIM, n::Int; t = π / 2)
@@ -131,9 +133,17 @@ model = QDIM(;μd=.51, γ=2.09)
 data = rand(model, 100)
 ```
 """
-function rand(model::AbstractQDIM, n::Int; t = π / 2)
-    Θ = predict(model; t)
+function rand(model::AbstractQDIM, outcomes1::Vector{<:Number}, outcomes2::Vector{<:Number}, n::Int; t = π / 2)
+    Θ = predict(model, outcomes1, outcomes2; t)
     return @. rand(Binomial(n, Θ))
+end
+
+function rand(model::AbstractQDIM, outcomes1, outcomes2, n::Int; t = π / 2)
+    return map(x -> rand(model, x..., n; t), zip(outcomes1, outcomes2))
+end
+
+function rand(model::AbstractQDIM, outcomes1, outcomes2, n; t = π / 2)
+    return map(x -> rand(model, x...; t), zip(outcomes1, outcomes2, n))
 end
 
 """
@@ -190,9 +200,24 @@ data = rand(model, n_trials)
 logpdf(model, n_trials, data)
 ```
 """
-function logpdf(model::AbstractQDIM, n::Int, n_d::Vector{Int}; t = π / 2)
-    Θ = predict(model; t)
-    return sum(@. logpdf(Binomial(n, Θ), n_d))
+function logpdf(
+        model::AbstractQDIM, 
+        outcomes1::Vector{<:Number}, 
+        outcomes2::Vector{<:Number},
+        data::Vector{<:Number}, 
+        n::Int; 
+        t = π / 2
+    )
+    Θ = predict(model, outcomes1, outcomes2; t)
+    return sum(@. logpdf(Binomial(n, Θ), data))
+end
+
+function logpdf(model::AbstractQDIM, outcomes1, outcomes2, data, n::Int; t = π / 2)
+    return mapreduce(x -> logpdf(model, x..., n; t), +, zip(outcomes1, outcomes2, data))
+end
+
+function logpdf(model::AbstractQDIM, outcomes1, outcomes2, data, n; t = π / 2)
+    return mapreduce(x -> logpdf(model, x...; t), +, zip(outcomes1, outcomes2, data, n))
 end
 
 loglikelihood(d::AbstractQDIM, data::Tuple) = logpdf(d, data...)

@@ -211,7 +211,7 @@ The code used to generate the predictions can be viewed by expanding the code bl
 <summary><b>Show Code</b></summary>
 ```
 ```@example model_preds
-using QuantumPrisonersDilemmaModel
+using QuantumDynamicInconsistencyModels
 model = QPDM(;μd=.51, γ=2.09)
 preds = predict(model)
 ```
@@ -228,7 +228,7 @@ The plot below shows the dynamics of the model for each condition.
 ```
 ```@example a
 using Plots
-using QuantumPrisonersDilemmaModel 
+using QuantumDynamicInconsistencyModels 
 model = QPDM(;μd=.51, γ=2.09)
 ts = range(0, 3, length=300)
 preds = map(t -> predict(model; t), ts)
@@ -253,7 +253,7 @@ The plot below shows the interference effect as a function of $\mu$ for multiple
 ```
 ```@example contour_plot
 using Plots 
-using QuantumPrisonersDilemmaModel 
+using QuantumDynamicInconsistencyModels 
 
 function compute_IE(;μ, γ) 
 	preds = predict(QPDM(;μd=μ, γ)) 

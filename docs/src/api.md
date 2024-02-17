@@ -1,5 +1,5 @@
 ```@autodocs
-Modules = [QuantumPrisonersDilemmaModel]
+Modules = [QuantumDynamicInconsistencyModels]
 Order   = [:type, :function]
 Private = false
 ```

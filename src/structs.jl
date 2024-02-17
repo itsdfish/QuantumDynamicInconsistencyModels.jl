@@ -49,3 +49,5 @@ QDIM(; α, λ, w_win, γ) = QDIM(α, λ, w_win, γ)
 function QDIM(α, λ, w_win, γ) 
     return QDIM(promote(α, λ, w_win, γ)...)
 end
+
+Base.broadcastable(dist::AbstractQDIM) = Ref(dist)

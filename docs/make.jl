@@ -1,9 +1,9 @@
 using Documenter
-using QuantumPrisonersDilemmaModel
+using QuantumDynamicInconsistencyModels
 
 makedocs(
     warnonly = true,
-    sitename="QuantumPrisonersDilemmaModel",
+    sitename="QuantumDynamicInconsistencyModels",
     format=Documenter.HTML(
         assets=[
             asset(
@@ -14,7 +14,7 @@ makedocs(
         collapselevel=1,
     ),
     modules=[
-        QuantumPrisonersDilemmaModel, 
+        QuantumDynamicInconsistencyModels, 
         # Base.get_extension(SequentialSamplingModels, :TuringExt),  
         # Base.get_extension(SequentialSamplingModels, :PlotsExt) 
     ],
@@ -28,5 +28,5 @@ makedocs(
 )
 
 deploydocs(
-    repo="github.com/itsdfish/QuantumPrisonersDilemmaModel.jl.git",
+    repo="github.com/itsdfish/QuantumDynamicInconsistencyModels.jl.git",
 )

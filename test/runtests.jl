@@ -12,37 +12,60 @@ using SafeTestsets
     @test preds ≈ [.70,.56,.38] atol = .01
 end
 
-# @safetestset "rand" begin
-#     @safetestset "rand 1" begin
-#         using QuantumDynamicInconsistencyModels
-#         using Test
-#         using Random 
+@safetestset "rand" begin
+    @safetestset "rand 1" begin
+        using QuantumDynamicInconsistencyModels
+        using Test
+        using Random 
 
-#         Random.seed!(7878)
+        Random.seed!(7878)
     
-#         n = 100_000
-#         model = QDIM(;μd=.51, γ=2.09)
-#         data = rand(model, n)
-#         preds = predict(model)
-#         probs = data ./ n 
-#         @test probs ≈ preds atol = 1e-2
-#     end
+        n = 100_000
+        n = 100_000
 
-#     @safetestset "rand 2" begin
-#         using QuantumDynamicInconsistencyModels
-#         using Test
-#         using Random 
+        parms = (
+            α = .9, 
+            λ = 1,
+            w_win = .5,
+            γ = -1.74
+        )
 
-#         Random.seed!(4741)
+        model = QDIM(; parms...)
+        outcomes1 = [2,-1]
+        outcomes2 = [2,-1]
+
+        data = rand(model, outcomes1, outcomes2, n)
+        preds = predict(model, outcomes1, outcomes2)
+        probs = data ./ n 
+        @test probs ≈ preds atol = 1e-2
+    end
+
+    @safetestset "rand 2" begin
+        using QuantumDynamicInconsistencyModels
+        using Test
+        using Random 
+
+        Random.seed!(665)
     
-#         n = 100_000
-#         model = QDIM(;μd=1.5, γ=-1.09)
-#         data = rand(model, n)
-#         preds = predict(model)
-#         probs = data ./ n 
-#         @test probs ≈ preds atol = 1e-2
-#     end
-# end
+        n = 100_000
+
+        parms = (
+            α = .9, 
+            λ = 2,
+            w_win = .5,
+            γ = 2.5
+        )
+
+        model = QDIM(; parms...)
+        outcomes1 = [2,-1]
+        outcomes2 = [2,-1]
+
+        data = rand(model, outcomes1, outcomes2, n)
+        preds = predict(model, outcomes1, outcomes2)
+        probs = data ./ n 
+        @test probs ≈ preds atol = 1e-2
+    end
+end
 
 @safetestset "H1" begin
     using QuantumDynamicInconsistencyModels
@@ -73,31 +96,47 @@ end
     @test H2 == H2'
 end
 
-# @safetestset "logpdf" begin
-#     using QuantumDynamicInconsistencyModels
-#     using Test
-#     using Random 
+@safetestset "logpdf" begin
+    using QuantumDynamicInconsistencyModels
+    using Test
+    using Random 
 
-#     Random.seed!(410)
+    Random.seed!(410)
 
-#     n = 20_000
-#     μd = 1.0
-#     γ = 2.0
+    parms = (
+        α = .9, 
+        λ = 2,
+        w_win = .5,
+        γ = 2.5
+    )
 
-#     μds = range(.8 * μd, 1.2 * μd, length=100)
-#     γs = range(.8 * γ, 1.2 * γ, length=100)
+    outcomes1 = [[2,-1],[5,-3],[.5,-.25],[2,-2],[5,-5],[.5,-.50]]
+    outcomes2 = [[2,-1],[5,-3],[.5,-.25],[2,-2],[5,-5],[.5,-.50]]
 
-#     model = QDIM(;μd, γ)
-#     data = rand(model, n)
+    n = 20_000
+    model = QDIM(; parms...)
+    data = rand(model, outcomes1, outcomes2, n)
 
-#     LLs = map(μd -> logpdf(QDIM(;μd=μd, γ), n, data), μds)
-#     _,mxi = findmax(LLs)
-#     @test μds[mxi] ≈ μd rtol = 1e-2
+    γs = range(.8 * parms.γ, 1.2 * parms.γ, length=100)
+    LLs = map(γ -> logpdf(QDIM(; parms..., γ), outcomes1, outcomes2, data, n), γs)
+    _,mxi = findmax(LLs)
+    @test γs[mxi] ≈ parms.γ rtol = 1e-2
 
-#     LLs = map(γ -> logpdf(QDIM(;μd, γ=γ), n, data), γs)
-#     _,mxi = findmax(LLs)
-#     @test γs[mxi] ≈ γ rtol = 1e-2
-# end
+    αs = range(.8 * parms.α, 1.2 * parms.α, length=100)
+    LLs = map(α -> logpdf(QDIM(; parms..., α), outcomes1, outcomes2, data, n), αs)
+    _,mxi = findmax(LLs)
+    @test αs[mxi] ≈ parms.α rtol = 1e-2
+
+    λs = range(.8 * parms.λ, 1.2 * parms.λ, length=100)
+    LLs = map(λ -> logpdf(QDIM(; parms..., λ), outcomes1, outcomes2, data, n), λs)
+    _,mxi = findmax(LLs)
+    @test λs[mxi] ≈ parms.λ rtol = 1e-1
+
+    w_wins = range(.8 * parms.w_win, 1.2 * parms.w_win, length=100)
+    LLs = map(w_win -> logpdf(QDIM(; parms..., w_win), outcomes1, outcomes2, data, n), w_wins)
+    _,mxi = findmax(LLs)
+    @test w_wins[mxi] ≈ parms.w_win rtol = 1e-2
+end
 
 # @safetestset "pdf" begin
 #     using QuantumDynamicInconsistencyModels
