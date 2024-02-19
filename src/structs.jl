@@ -1,53 +1,56 @@
 abstract type AbstractQDIM  <: ContinuousUnivariateDistribution end
 
 """
-
     QDIM{T<:Real} <: AbstractQDIM
 
 A model object for the Quantum Prisoner's Dilemma Model. The QDIM has four basis states:
     
-1. opponent defects and you defect 
-2. opponent defects and you cooperate 
-3. opponent cooperates and you defect 
-4. opponent cooperates and you cooperate
+1. win first gamble, accept second gamble 
+2. win first gamble, decline second gamble 
+3. lose first gamble, accept second gamble 
+4. lose first gamble, decline second gamble 
 
-The bases are orthonormal and in standard form. The model assumes three conditions:
+The bases are orthonormal and in standard form. The model generates predictions for three conditions:
 
-1. Player 2 is told that player 1 defected
-2. Player 2 is told that player 1 cooperated
-3. Player 2 is not informed of the action of player 1
-
-
-Model inputs and outputs are assumed to be in the order above. 
+1. Accept second gamble after winning first gamble 
+2. Accept second gamble after losing first gamble
+3. Plan to accept second gamble before observing outcome
 
 # Fields 
 
-- `μd`: utility for defecting 
-- `μc`: utility for cooperating 
-- `γ`: entanglement parameter for beliefs and actions 
+- `α::T`: utility curvature parameter where α < 1 is risk averse and α > 1 is risk seeking
+- `λ::T`: loss aversion parameter 
+- `w₁:T`: decision weight for the first outcome
+- `γ::T`: entanglement parameter for beliefs and actions 
+
+# Constructors 
+
+    QDIM(; α, λ, w₁, γ)
+
+    QDIM(α, λ, w₁, γ)
 
 # Example 
 
 ```julia
 using QuantumDynamicInconsistencyModels
-model = QDIM(;μd=.51, γ=2.09)
+model = QDIM(; α = .9, λ = 2, w₁ = .5, γ = -1.74)
 ```
 
 # References 
 
-Pothos, E. M., & Busemeyer, J. R. (2009). A quantum probability explanation for violations of ‘rational’decision theory. Proceedings of the Royal Society B: Biological Sciences, 276(1665), 2171-2178.
+Busemeyer, J. R., Wang, Z., & Shiffrin, R. M. (2015). Bayesian model comparison favors quantum over standard decision theory account of dynamic inconsistency. Decision, 2(1), 1.
 """
 struct QDIM{T<:Real} <: AbstractQDIM
     α::T
     λ::T
-    w_win::T
+    w₁::T
     γ::T
 end
 
-QDIM(; α, λ, w_win, γ) = QDIM(α, λ, w_win, γ)
+QDIM(; α, λ, w₁, γ) = QDIM(α, λ, w₁, γ)
 
-function QDIM(α, λ, w_win, γ) 
-    return QDIM(promote(α, λ, w_win, γ)...)
+function QDIM(α, λ, w₁, γ) 
+    return QDIM(promote(α, λ, w₁, γ)...)
 end
 
 Base.broadcastable(dist::AbstractQDIM) = Ref(dist)

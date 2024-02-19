@@ -1,15 +1,17 @@
 """
-    predict(model::AbstractQDIM; t = π / 2)
+    predict(model::AbstractQDIM, outcomes1, outcomes2; t = π / 2)
 
-Returns predicted response probability for the following conditions:
+Returns predicted response probabilities for the following conditions 
 
-1. Player 2 is told that player 1 defected
-2. Player 2 is told that player 1 cooperated
-3. Player 2 is not informed of player 1's action
-    
+1. Accept second gamble after winning first gamble 
+2. Accept second gamble after losing first gamble
+3. Plan to accept second gamble before observing outcome
+
 # Arguments
 
-- `model::AbstractQDIM`
+- `model::AbstractQDIM`: a subtype of `AbstractQDIM``
+- `outcomes1::Vector{<:Number}`: outcomes for the first gamble
+- `outcomes2::Vector{<:Number}`: outcomes for the second gamble 
 
 # Keywords
 
@@ -18,9 +20,11 @@ Returns predicted response probability for the following conditions:
 # Example 
 
 ```julia 
-using QuantumDynamicInconsistencyModels 
-model = QDIM(;μd=.51, γ=2.09)
-predict(model)
+using QuantumDynamicInconsistencyModels
+model = QDIM(; α = .9, λ = 2, w₁ = .5, γ = -1.74)
+outcomes1 = [2,-1]
+outcomes2 = [2,-1]
+preds = predict(model, outcomes1, outcomes2)
 ```
 """
 function predict(model::AbstractQDIM, outcomes1, outcomes2; t = π / 2)
@@ -63,15 +67,15 @@ function predict(model::AbstractQDIM, outcomes1, outcomes2; t = π / 2)
 end
 
 """
-    make_H1(μd, μc)
+    make_H1(d_win, d_loss)  
 
-Creates a Hamiltonian matrix which rotates in favor of defecting or cooperating depending on 
-μd and μd. 
+Creates a Hamiltonian matrix which rotates in favor of accepting second gamble based on outcome of 
+first gamble. 
 
 # Arguments 
 
-- `μd`: utility for defecting 
-- `μc`: utility for cooperating
+- `d_win`: utility difference given a win in the first gamble 
+- `d_loss`: utility difference given a loss in the first gamble 
 """
 function make_H1(d_win, d_loss)
     hw = tanh(.5 * d_win)
@@ -108,17 +112,25 @@ function rand(model::AbstractQDIM, outcomes1, outcomes2; t = π / 2)
 end
 
 """
-    rand(model::AbstractQDIM, n::Int; t = π / 2)
+    rand(
+        model::AbstractQDIM, 
+        outcomes1::Vector{<:Number}, 
+        outcomes2::Vector{<:Number}, 
+        n::Int; 
+        t = π / 2
+    )
 
 Generates simulated data for the following conditions:
 
-1. Player 2 is told that player 1 defected
-2. Player 2 is told that player 1 cooperated
-3. Player 2 is not informed of player 1's action
+1. Accept second gamble after winning first gamble 
+2. Accept second gamble after losing first gamble
+3. Plan to accept second gamble before observing outcome
 
 # Arguments
 
-- `model::AbstractQDIM`
+- `model::AbstractQDIM`: a subtype of `AbstractQDIM``
+- `outcomes1::Vector{<:Number}`: outcomes for the first gamble
+- `outcomes2::Vector{<:Number}`: outcomes for the second gamble 
 - `n`: the number of trials per condition 
 
 # Keywords
@@ -128,12 +140,21 @@ Generates simulated data for the following conditions:
 # Example 
 
 ```julia 
-using QuantumDynamicInconsistencyModels 
-model = QDIM(;μd=.51, γ=2.09)
-data = rand(model, 100)
+using QuantumDynamicInconsistencyModels
+model = QDIM(; α = .9, λ = 1, w₁ = .5, γ = -1.74)
+outcomes1 = [2,-1]
+outcomes2 = [2,-1]
+n_trials = 10
+data = rand(model, outcomes1, outcomes2, n_trials)
 ```
 """
-function rand(model::AbstractQDIM, outcomes1::Vector{<:Number}, outcomes2::Vector{<:Number}, n::Int; t = π / 2)
+function rand(
+        model::AbstractQDIM, 
+        outcomes1::Vector{<:Number}, 
+        outcomes2::Vector{<:Number}, 
+        n::Int; 
+        t = π / 2
+    )
     Θ = predict(model, outcomes1, outcomes2; t)
     return @. rand(Binomial(n, Θ))
 end
@@ -142,34 +163,65 @@ function rand(model::AbstractQDIM, outcomes1, outcomes2, n::Int; t = π / 2)
     return map(x -> rand(model, x..., n; t), zip(outcomes1, outcomes2))
 end
 
-function rand(model::AbstractQDIM, outcomes1, outcomes2, n; t = π / 2)
-    return map(x -> rand(model, x...; t), zip(outcomes1, outcomes2, n))
-end
-
 """
-    pdf(model::AbstractQDIM, n::Int, n_d::Vector{Int}; t = π / 2)
+    rand(model::AbstractQDIM, outcomes1, outcomes2, n; t = π / 2)
 
-Returns the joint probability density given data for the following conditions:
+Generates simulated data for the following conditions:
 
-1. Player 2 is told that player 1 defected
-2. Player 2 is told that player 1 cooperated
-3. Player 2 is not informed of player 1's action
-    
+1. Accept second gamble after winning first gamble 
+2. Accept second gamble after losing first gamble
+3. Plan to accept second gamble before observing outcome
 
 # Arguments
 
-- `model::AbstractQDIM`
-- `n`: the number of trials per condition 
-- `n_d`: the number of defections in each condition 
+- `model::AbstractQDIM`: a subtype of `AbstractQDIM``
+- `outcomes1`: a vector of vectors where each subvector contains outcomes for the first gamble of a given trial
+- `outcomes2`: a vector of vectors where each subvector contains outcomes for the second gamble of a given trial
+- `n`: a vector containing the number of trials per condition per gamble
 
 # Keywords
 
 - `t = π / 2`: time of decision
+
+# Example 
+
+```julia 
+using QuantumDynamicInconsistencyModels
+model = QDIM(; α = .9, λ = 1, w₁ = .5, γ = -1.74)
+outcomes1 = [[2,-1],[3,-2]]
+outcomes2 = [[2,-1],[3,-2]]
+n_trials = [10,20]
+data = rand(model, outcomes1, outcomes2, n_trials)
+```
 """
-function pdf(model::AbstractQDIM, n::Int, n_d::Vector{Int}; t = π / 2)
-    Θ = predict(model; t)
-    return prod(@. pdf(Binomial(n, Θ), n_d)) 
+function rand(model::AbstractQDIM, outcomes1, outcomes2, n; t = π / 2)
+    return map(x -> rand(model, x...; t), zip(outcomes1, outcomes2, n))
 end
+
+# """
+#     pdf(model::AbstractQDIM, n::Int, n_d::Vector{Int}; t = π / 2)
+
+# Returns the joint probability density given data for the following conditions:
+
+# 1. Player 2 is told that player 1 defected
+# 2. Player 2 is told that player 1 cooperated
+# 3. Player 2 is not informed of player 1's action
+    
+
+# # Arguments
+
+# - `model::AbstractQDIM`
+# - `n`: the number of trials per condition 
+# - `n_d`: the number of defections in each condition 
+
+# # Keywords
+
+# - `t = π / 2`: time of decision
+# """
+# function pdf(model::AbstractQDIM, n::Int, n_d::Vector{Int}; t = π / 2)
+#     Θ = predict(model; t)
+#     return prod(@. pdf(Binomial(n, Θ), n_d)) 
+# end
 
 """
     logpdf(model::AbstractQDIM, n::Int, n_d::Vector{Int}; t = π / 2)
@@ -212,6 +264,37 @@ function logpdf(
     return sum(@. logpdf(Binomial(n, Θ), data))
 end
 
+"""
+    rand(model::AbstractQDIM, outcomes1, outcomes2, n; t = π / 2)
+
+Generates simulated data for the following conditions:
+
+1. Accept second gamble after winning first gamble 
+2. Accept second gamble after losing first gamble
+3. Plan to accept second gamble before observing outcome
+
+# Arguments
+
+- `model::AbstractQDIM`: a subtype of `AbstractQDIM``
+- `outcomes1`: a vector of vectors where each subvector contains outcomes for the first gamble of a given trial
+- `outcomes2`: a vector of vectors where each subvector contains outcomes for the second gamble of a given trial
+- `n::Int`: the number of trials per condition per gamble
+
+# Keywords
+
+- `t = π / 2`: time of decision
+
+# Example 
+
+```julia 
+using QuantumDynamicInconsistencyModels
+model = QDIM(; α = .9, λ = 1, w₁ = .5, γ = -1.74)
+outcomes1 = [[2,-1],[3,-2]]
+outcomes2 = [[2,-1],[3,-2]]
+n_trials = 10
+data = rand(model, outcomes1, outcomes2, n_trials)
+```
+"""
 function logpdf(model::AbstractQDIM, outcomes1, outcomes2, data, n::Int; t = π / 2)
     return mapreduce(x -> logpdf(model, x..., n; t), +, zip(outcomes1, outcomes2, data))
 end
@@ -225,15 +308,13 @@ loglikelihood(d::AbstractQDIM, data::Tuple) = logpdf(d, data...)
 logpdf(model::AbstractQDIM, x::Tuple) = logpdf(model, x...)
 
 function get_expected_utility(model::AbstractQDIM, vals::Vector{<:Number})
-    (;λ,α,w_win) = model
+    (;λ,α,w₁) = model
     utils = get_utility.(vals, α, λ)
-    w = [w_win,1-w_win]
+    w = [w₁,1-w₁]
     return utils' * w 
 end
 
-function get_utility(v::Number, α, λ)
-    return  v < 0 ? -λ * abs(v)^α : v^α
-end
+get_utility(v, α, λ) = v < 0 ? -λ * abs(v)^α : v^α
 
 """
     get_utility_diffs(model::AbstractQDIM, outcomes1, outcomes2)

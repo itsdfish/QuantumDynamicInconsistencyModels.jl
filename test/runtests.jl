@@ -4,7 +4,7 @@ using SafeTestsets
     using QuantumDynamicInconsistencyModels
     using Test
 
-    model = QDIM(;α = 1.0, λ = 1, w_win = .75, γ = 1.74)
+    model = QDIM(;α = 1.0, λ = 1, w₁ = .75, γ = 1.74)
     outcomes1 = [2,-1]
     outcomes2 = [2,-1]
     preds = predict(model, outcomes1, outcomes2)
@@ -26,7 +26,7 @@ end
         parms = (
             α = .9, 
             λ = 1,
-            w_win = .5,
+            w₁ = .5,
             γ = -1.74
         )
 
@@ -52,7 +52,7 @@ end
         parms = (
             α = .9, 
             λ = 2,
-            w_win = .5,
+            w₁ = .5,
             γ = 2.5
         )
 
@@ -106,7 +106,7 @@ end
     parms = (
         α = .9, 
         λ = 2,
-        w_win = .5,
+        w₁ = .5,
         γ = 2.5
     )
 
@@ -132,10 +132,10 @@ end
     _,mxi = findmax(LLs)
     @test λs[mxi] ≈ parms.λ rtol = 1e-1
 
-    w_wins = range(.8 * parms.w_win, 1.2 * parms.w_win, length=100)
-    LLs = map(w_win -> logpdf(QDIM(; parms..., w_win), outcomes1, outcomes2, data, n), w_wins)
+    w₁s = range(.8 * parms.w₁, 1.2 * parms.w₁, length=100)
+    LLs = map(w₁ -> logpdf(QDIM(; parms..., w₁), outcomes1, outcomes2, data, n), w₁s)
     _,mxi = findmax(LLs)
-    @test w_wins[mxi] ≈ parms.w_win rtol = 1e-2
+    @test w₁s[mxi] ≈ parms.w₁ rtol = 1e-2
 end
 
 # @safetestset "pdf" begin
@@ -165,11 +165,23 @@ end
     using QuantumDynamicInconsistencyModels: get_utility_diffs
     using Test
 
-    model = QDIM(;α=.65, λ=1.6, w_win = .5, γ = 2.2)
+    model = QDIM(;α=.65, λ=1.6, w₁ = .5, γ = 2.2)
     outcomes1 = [2,-1]
     outcomes2 = [2,-1]
     d = get_utility_diffs(model, outcomes1, outcomes2)
     
     @test d[1] ≈ .162 atol = .001
     @test d[2] ≈ .8447 atol = .001
+end
+
+@safetestset "get_utility" begin
+    using QuantumDynamicInconsistencyModels
+    using QuantumDynamicInconsistencyModels: get_utility
+    using Test
+
+    utility = get_utility(4, .5, 2)
+    @test utility ≈ 2 
+
+    utility = get_utility(-4, .5, 2)
+    @test utility ≈ -4 
 end
