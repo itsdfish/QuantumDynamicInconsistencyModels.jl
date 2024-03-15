@@ -1,4 +1,4 @@
-abstract type AbstractQDIM  <: ContinuousUnivariateDistribution end
+abstract type AbstractQDIM <: ContinuousUnivariateDistribution end
 
 """
     QDIM{T<:Real} <: AbstractQDIM
@@ -51,7 +51,7 @@ end
 
 QDIM(; α, λ, w₁, m, γ) = QDIM(α, λ, w₁, m, γ)
 
-function QDIM(α, λ, w₁, m, γ) 
+function QDIM(α, λ, w₁, m, γ)
     return QDIM(promote(α, λ, w₁, m, γ)...)
 end
 
