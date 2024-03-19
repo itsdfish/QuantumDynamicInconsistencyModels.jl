@@ -89,7 +89,7 @@ function predict_given_win(model::AbstractQDIM, outcomes1, outcomes2; t = π / 2
     # projection matrix for winning first gamble 
     Pw = Diagonal([1.0, 1.0, 0.0, 0.0])
 
-    # compute probability of planning to accept second gamble given a win in the first gamble 
+    # compute probability of accepting second gamble given a win in the first gamble 
     proj_w = Pa * U * ψw
     p_w = real(proj_w' * proj_w)
 
@@ -116,7 +116,7 @@ function predict_given_win(model::AbstractQDIM, outcomes1, outcomes2; t = π / 2
     # proj = Pa * U * ψpw
     # p_p_w1 = real(proj' * proj)
     # println(p_p_w1)
-
+    # plan, final
     return [p_p_aw / p_p_w, p_w]
     #return [p_p_w, p_w]
 end
@@ -170,7 +170,7 @@ function predict_given_loss(model::AbstractQDIM, outcomes1, outcomes2; t = π / 
     # projection matrix for losing first gamble and accepting second gamble  
     Pal = Diagonal([0.0, 0.0, 1.0, 0.0])
 
-    # compute probability of planning to accept second gamble given a loss in the first gamble 
+    # compute probability of accepting the second gamble given a loss in the first gamble 
     proj_l = Pa * U * ψl
     p_l = real(proj_l' * proj_l)
 
@@ -316,8 +316,8 @@ function make_H2(γ)
     return H
 end
 
-function rand(model::AbstractQDIM, outcomes1, outcomes2; t = π / 2)
-    return rand(model, outcomes1, outcomes2, 1; t)
+function rand(model::AbstractQDIM, outcomes1, outcomes2, won_first; t = π / 2)
+    return rand(model, outcomes1, outcomes2, won_first, 1; t)
 end
 
 """
@@ -340,6 +340,7 @@ Generates simulated data for the following conditions:
 - `model::AbstractQDIM`: a subtype of `AbstractQDIM``
 - `outcomes1::Vector{<:Number}`: outcomes for the first gamble
 - `outcomes2::Vector{<:Number}`: outcomes for the second gamble 
+- `won_first`:
 - `n`: the number of trials per condition 
 
 # Keywords
@@ -361,19 +362,20 @@ function rand(
     model::AbstractQDIM,
     outcomes1::Vector{<:Number},
     outcomes2::Vector{<:Number},
+    won_first,
     n::Int;
     t = π / 2,
 )
-    Θ = predict(model, outcomes1, outcomes2; t)
-    return @. rand(Binomial(n, Θ))
+    Θ = predict(model, outcomes1, outcomes2, won_first; t)
+    return rand(Multinomial(n, Θ))
 end
 
-function rand(model::AbstractQDIM, outcomes1, outcomes2, n::Int; t = π / 2)
-    return map(x -> rand(model, x..., n; t), zip(outcomes1, outcomes2))
+function rand(model::AbstractQDIM, outcomes1, outcomes2, won_first, n::Int; t = π / 2)
+    return map(x -> rand(model, x..., n, won_first, ; t), zip(outcomes1, outcomes2))
 end
 
 """
-    rand(model::AbstractQDIM, outcomes1, outcomes2, n; t = π / 2)
+    rand(model::AbstractQDIM, outcomes1, outcomes2, won_first, n; t = π / 2)
 
 Generates simulated data for the following conditions:
 
@@ -403,8 +405,8 @@ n_trials = [10,20]
 data = rand(model, outcomes1, outcomes2, n_trials)
 ```
 """
-function rand(model::AbstractQDIM, outcomes1, outcomes2, n; t = π / 2)
-    return map(x -> rand(model, x...; t), zip(outcomes1, outcomes2, n))
+function rand(model::AbstractQDIM, outcomes1, outcomes2, won_first, n; t = π / 2)
+    return map(x -> rand(model, x..., won_first; t), zip(outcomes1, outcomes2, n))
 end
 
 """
@@ -447,12 +449,13 @@ function logpdf(
     model::AbstractQDIM,
     outcomes1::Vector{<:Number},
     outcomes2::Vector{<:Number},
+    won_first,
     data::Vector{<:Number},
     n::Int;
     t = π / 2,
 )
-    Θ = predict(model, outcomes1, outcomes2; t)
-    return sum(@. logpdf(Binomial(n, Θ), data))
+    Θ = predict(model, outcomes1, outcomes2, won_first; t)
+    return logpdf(Multinomial(n, Θ), data)
 end
 
 """
@@ -486,12 +489,28 @@ n_trials = 10
 data = rand(model, outcomes1, outcomes2, n_trials)
 ```
 """
-function logpdf(model::AbstractQDIM, outcomes1, outcomes2, data, n::Int; t = π / 2)
-    return mapreduce(x -> logpdf(model, x..., n; t), +, zip(outcomes1, outcomes2, data))
+function logpdf(
+    model::AbstractQDIM,
+    outcomes1,
+    outcomes2,
+    won_first,
+    data,
+    n::Int;
+    t = π / 2,
+)
+    return mapreduce(
+        x -> logpdf(model, x..., won_first, n; t),
+        +,
+        zip(outcomes1, outcomes2, data),
+    )
 end
 
-function logpdf(model::AbstractQDIM, outcomes1, outcomes2, data, n; t = π / 2)
-    return mapreduce(x -> logpdf(model, x...; t), +, zip(outcomes1, outcomes2, data, n))
+function logpdf(model::AbstractQDIM, outcomes1, outcomes2, data, won_first, n; t = π / 2)
+    return mapreduce(
+        x -> logpdf(model, x..., won_first; t),
+        +,
+        zip(outcomes1, outcomes2, data, n),
+    )
 end
 
 loglikelihood(d::AbstractQDIM, data::Tuple) = logpdf(d, data...)
@@ -521,7 +540,7 @@ during the previous stage.
 
 # Returns 
 
-- `util_diffs`: utility diff between taking second gamble and rejecting second gamble. The first entanglement
+- `util_diffs`: utility diff between taking second gamble and rejecting second gamble. The first element
 is conditioned on winning in the first stage and the second element is conditioned on losing in the first stage.
 """
 function get_utility_diffs(model::AbstractQDIM, outcomes1, outcomes2)
