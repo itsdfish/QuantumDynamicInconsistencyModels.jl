@@ -43,7 +43,7 @@ end
 """
     predict_given_win(model::AbstractQDIM, outcomes1, outcomes2; t = π / 2)
 
-Returns the probability of planning to accept the second gamble conditioned on winning the first gamble and
+Returns the probability of planning to accept the second gamble (not conditioned on an anticipated outcome) and
     the probability of accepting the second gamble in the final decision conditioned on winning the first gamble.
 
 # Arguments
@@ -84,47 +84,22 @@ function predict_given_win(model::AbstractQDIM, outcomes1, outcomes2; t = π / 2
 
     # projection matrix for accepting second gamble  
     Pa = Diagonal([1.0, 0.0, 1.0, 0.0])
-    # projection matrix for winning first gamble and accepting second gamble  
-    Paw = Diagonal([1.0, 0.0, 0.0, 0.0])
-    # projection matrix for winning first gamble 
-    Pw = Diagonal([1.0, 1.0, 0.0, 0.0])
 
-    # compute probability of accepting second gamble given a win in the first gamble 
-    proj_w = Pa * U * ψw
-    p_w = real(proj_w' * proj_w)
+    # compute probability of planning to accept second gamble
+    proj = Pa * U * ψ0
+    p_p_a = real(proj' * proj)
 
-    # compute probability of planning to accept second gamble and winning first gamble
-    proj = Paw * U * ψ0
-    p_p_aw = real(proj' * proj)
+    # compute probability of accepting second gamble given an experienced win
+    proj = Pa * U * ψw
+    p_f_a = real(proj' * proj)
 
-    # compute probability of winning first gamble when making a plan 
-    proj = Pw * U * ψ0
-    p_p_w = real(proj' * proj)
-
-    # # compute probability of winning first gamble when making a plan 
-    # proj = Pa * U * ψ0
-    # p_p_w = real(proj' * proj)
-
-    # proj = Pw  * U * ψ0
-    # ψpw = proj ./ norm(proj)
-    # proj = Paw * ψpw
-    # p_p_w1 = real(proj' * proj)
-    # println(p_p_w1)
-
-    # proj = Pw * ψ0
-    # ψpw = proj ./ norm(proj)
-    # proj = Pa * U * ψpw
-    # p_p_w1 = real(proj' * proj)
-    # println(p_p_w1)
-    # plan, final
-    return [p_p_aw / p_p_w, p_w]
-    #return [p_p_w, p_w]
+    return [p_p_a, p_f_a]
 end
 
 """
     predict_given_loss(model::AbstractQDIM, outcomes1, outcomes2; t = π / 2)
 
-Returns the probability of planning to accept the second gamble conditioned on lossing the first gamble and
+Returns the probability of planning to accept the second gamble (not conditioned on an anticipated outcome) and
     the probability of accepting the second gamble in the final decision conditioned on lossing the first gamble.
 
 # Arguments
@@ -165,28 +140,16 @@ function predict_given_loss(model::AbstractQDIM, outcomes1, outcomes2; t = π / 
 
     # projection matrix for accepting second gamble  
     Pa = Diagonal([1.0, 0.0, 1.0, 0.0])
-    # projection matrix for losing first gamble  
-    Pl = Diagonal([0.0, 0.0, 1.0, 1.0])
-    # projection matrix for losing first gamble and accepting second gamble  
-    Pal = Diagonal([0.0, 0.0, 1.0, 0.0])
 
-    # compute probability of accepting the second gamble given a loss in the first gamble 
-    proj_l = Pa * U * ψl
-    p_l = real(proj_l' * proj_l)
+    # compute probability of planning to accept second gamble
+    proj = Pa * U * ψ0
+    p_p_a = real(proj' * proj)
 
-    # compute probability of planning to accept second gamble and losing first gamble
-    proj = Pal * U * ψ0
-    p_p_al = real(proj' * proj)
+    # compute probability of accepting second gamble given an experienced loss
+    proj = Pa * U * ψl
+    p_f_a = real(proj' * proj)
 
-    # proj = Pa * U * ψ0
-    # p_p_al = real(proj' * proj)
-
-    # compute probability of losing first gamble when making a plan 
-    proj = Pl * U * ψ0
-    p_p_l = real(proj' * proj)
-
-    #return [p_p_al, p_l]
-    return [p_p_al / p_p_l, p_l]
+    return [p_p_a, p_f_a]
 end
 
 function predict_joint_probs(model::AbstractQDIM, p_plan, p_final)
@@ -200,75 +163,6 @@ function predict_joint_probs(model::AbstractQDIM, p_plan, p_final)
     # probability of planning to reject second gamble and rejecting second gamble
     p_rr = (1 - p_plan) * (m + (1 - m) * (1 - p_final))
     return [p_aa, p_ar, p_ra, p_rr]
-end
-
-"""
-    predict_sure_thing(model::AbstractQDIM, outcomes1, outcomes2; t = π / 2)
-
-Returns predicted response probabilities for the following conditions 
-
-1. Accept second gamble after winning first gamble 
-2. Accept second gamble after losing first gamble
-3. Plan to accept second gamble before observing outcome
-
-# Arguments
-
-- `model::AbstractQDIM`: a subtype of `AbstractQDIM``
-- `outcomes1::Vector{<:Number}`: outcomes for the first gamble
-- `outcomes2::Vector{<:Number}`: outcomes for the second gamble 
-
-# Keywords
-
-- `t = π / 2`: time of decision
-
-# Example 
-
-```julia 
-using QuantumDynamicInconsistencyModels
-using QuantumDynamicInconsistencyModels: predict_sure_thing
-model = QDIM(; α = .9, λ = 2, w₁ = .5, γ = -1.74)
-outcomes1 = [2,-1]
-outcomes2 = [2,-1]
-preds = predict_sure_thing(model, outcomes1, outcomes2)
-```
-"""
-function predict_sure_thing(model::AbstractQDIM, outcomes1, outcomes2; t = π / 2)
-    (; γ) = model
-    # utility difference between accepting/rejecting second gamble given a (1) win,
-    # or (2) loss in the first gamble 
-    d_win, d_loss = get_utility_diffs(model, outcomes1, outcomes2)
-    # rotates belief in favor of cooperation of defection 
-    H1 = make_H1(d_win, d_loss)
-    # hamiltonian matrix for reducing cognitive dissonance
-    # aligns action with belief about opponent's action 
-    H2 = make_H2(γ)
-    # combine both hamiltonian matrices so that time evolution reflects their joint contribution
-    H = H1 .+ H2
-    # unitary transformation matrix
-    U = exp(-im * t * H)
-
-    # cognitive state after observing win in first gamble 
-    ψw = [√(0.5), √(0.5), 0, 0]
-    # cognitive state after observing loss in first gamble 
-    ψl = [0, 0, √(0.5), √(0.5)]
-    # cognitive state when outcome of first gamble is unknown
-    ψ0 = fill(0.5, 4)
-
-    # projection matrix for accepting second gamble  
-    M = Diagonal([1.0, 0.0, 1.0, 0.0])
-
-    # compute probability of accepting second gamble given a win in the first gamble 
-    proj_w = M * U * ψw
-    p_w = real(proj_w' * proj_w)
-
-    # compute probability of accepting second gamble given a loss in the first gamble 
-    proj_l = M * U * ψl
-    p_l = real(proj_l' * proj_l)
-
-    # compute probability of defecting given no knowledge of opponent's action
-    proj = M * U * ψ0
-    p = real(proj' * proj)
-    return [p_w, p_l, p]
 end
 
 """
@@ -371,7 +265,7 @@ function rand(
 end
 
 function rand(model::AbstractQDIM, outcomes1, outcomes2, won_first, n::Int; t = π / 2)
-    return map(x -> rand(model, x..., n, won_first, ; t), zip(outcomes1, outcomes2))
+    return map(x -> rand(model, x..., n, ; t), zip(outcomes1, outcomes2, won_first))
 end
 
 """
@@ -499,9 +393,9 @@ function logpdf(
     t = π / 2,
 )
     return mapreduce(
-        x -> logpdf(model, x..., won_first, n; t),
+        x -> logpdf(model, x..., n; t),
         +,
-        zip(outcomes1, outcomes2, data),
+        zip(outcomes1, outcomes2, won_first, data),
     )
 end
 
@@ -551,4 +445,58 @@ function get_utility_diffs(model::AbstractQDIM, outcomes1, outcomes2)
     # gamble 2 expected utility 
     u2 = [get_expected_utility(model, vals[i]) for i ∈ 1:length(vals)]
     return u2 - u1
+end
+
+function predict_temp(model::AbstractQDIM, outcomes1, outcomes2; t = π / 2)
+    (; γ) = model
+    # utility difference between accepting/rejecting second gamble given a (1) win,
+    # or (2) loss in the first gamble 
+    d_win, d_loss = get_utility_diffs(model, outcomes1, outcomes2)
+    # rotates belief in favor of accepting gamble 
+    H1 = make_H1(d_win, d_loss)
+    # hamiltonian matrix for reducing cognitive dissonance
+    # aligns action with belief about winning gamble
+    H2 = make_H2(γ)
+    # combine both hamiltonian matrices so that time evolution reflects their joint contribution
+    H = H1 .+ H2
+    # unitary transformation matrix
+    U = exp(-im * t * H)
+
+    # cognitive state after observing win in first gamble 
+    ψw = [√(0.5), √(0.5), 0, 0]
+    # cognitive state when outcome of first gamble is unknown
+    ψ0 = fill(0.5, 4)
+
+    # basis vectors 
+    # 1. win first gamble, accept second gamble 
+    # 2. win first gamble, decline second gamble 
+    # 3. lose first gamble, accept second gamble 
+    # 4. lose first gamble, decline second gamble 
+
+    # projection matrix for accepting second gamble  
+    Pa = Diagonal([1.0, 0.0, 1.0, 0.0])
+    Paw = Diagonal([1.0, 0.0, 0.0, 0.0])
+    Pw = Diagonal([1.0, 1.0, 0.0, 0.0])
+    Pal = Diagonal([0.0, 0.0, 1.0, 0.0])
+    Pl = Diagonal([0.0, 0.0, 1.0, 1.0])
+
+    # compute probability of planning to accept second gamble
+    proj = Paw * U * ψ0
+    p_p_aw = real(proj' * proj)
+
+    proj = Pw * U * ψ0
+    p_p_w = real(proj' * proj)
+
+    # compute probability of planning to accept second gamble
+    proj = Pal * U * ψ0
+    p_p_al = real(proj' * proj)
+
+    proj = Pl * U * ψ0
+    p_p_l = real(proj' * proj)
+
+    # compute probability of accepting second gamble given an experienced win
+    proj = Pa * U * ψw
+    p_f_a = real(proj' * proj)
+
+    return [p_p_aw / p_p_w, p_p_al / p_p_l, p_f_a]
 end

@@ -1,7 +1,7 @@
 name = "QuantumDynamicInconsistencyModels"
 uuid = "0ed30ee8-6cef-4eac-8e89-7848059aa71e"
 authors = ["itsdfish"]
-version = "0.1.0"
+version = "0.2.0"
 
 [deps]
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
@@ -13,6 +13,7 @@ SafeTestsets = "1bc83da4-3b8d-516f-aca4-4fe02f6d838f"
 [compat]
 Distributions = "0.25.0"
 LinearAlgebra = "1"
+PrettyTables = "2.3.0"
 Random = "1"
 SafeTestsets = "0.1.0"
 julia = "1"
