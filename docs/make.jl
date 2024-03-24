@@ -7,16 +7,16 @@ makedocs(
     format = Documenter.HTML(
         assets = [
             asset(
-                "https://fonts.googleapis.com/css?family=Montserrat|Source+Code+Pro&display=swap",
-                class = :css
-            )
+            "https://fonts.googleapis.com/css?family=Montserrat|Source+Code+Pro&display=swap",
+            class = :css
+        )
         ],
         collapselevel = 1
     ),
     modules = [
         QuantumDynamicInconsistencyModels
-        # Base.get_extension(SequentialSamplingModels, :TuringExt),  
-        # Base.get_extension(SequentialSamplingModels, :PlotsExt) 
+    # Base.get_extension(SequentialSamplingModels, :TuringExt),  
+    # Base.get_extension(SequentialSamplingModels, :PlotsExt) 
     ],
     pages = [
         "Home" => "index.md",
