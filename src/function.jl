@@ -392,8 +392,7 @@ function logpdf(
     n::Int;
     t = π / 2,
 )
-    return mapreduce(
-        x -> logpdf(model, x..., n; t),
+    return mapreduce(x -> logpdf(model, x..., n; t),
         +,
         zip(outcomes1, outcomes2, won_first, data),
     )
