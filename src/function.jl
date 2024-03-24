@@ -258,7 +258,7 @@ function rand(
     outcomes2::Vector{<:Number},
     won_first,
     n::Int;
-    t = π / 2,
+    t = π / 2
 )
     Θ = predict(model, outcomes1, outcomes2, won_first; t)
     return rand(Multinomial(n, Θ))
@@ -346,7 +346,7 @@ function logpdf(
     won_first,
     data::Vector{<:Number},
     n::Int;
-    t = π / 2,
+    t = π / 2
 )
     Θ = predict(model, outcomes1, outcomes2, won_first; t)
     return logpdf(Multinomial(n, Θ), data)
@@ -390,11 +390,11 @@ function logpdf(
     won_first,
     data,
     n::Int;
-    t = π / 2,
+    t = π / 2
 )
     return mapreduce(x -> logpdf(model, x..., n; t),
         +,
-        zip(outcomes1, outcomes2, won_first, data),
+        zip(outcomes1, outcomes2, won_first, data)
     )
 end
 
@@ -402,7 +402,7 @@ function logpdf(model::AbstractQDIM, outcomes1, outcomes2, data, won_first, n; t
     return mapreduce(
         x -> logpdf(model, x..., won_first; t),
         +,
-        zip(outcomes1, outcomes2, data, n),
+        zip(outcomes1, outcomes2, data, n)
     )
 end
 
