@@ -13,6 +13,6 @@ function Base.show(io::IO, ::MIME"text/plain", model::AbstractQDIM)
         row_label_alignment = :l,
         row_labels = [fieldnames(typeof(model))...],
         formatters = ft_printf("%5.3f"),
-        alignment = :l,
+        alignment = :l
     )
 end

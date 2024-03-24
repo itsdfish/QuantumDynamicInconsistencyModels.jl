@@ -41,7 +41,7 @@ model = QDIM(; α = .9, λ = 2, w₁ = .5, m, = .6, γ = -1.74)
 
 Busemeyer, J. R., Wang, Z., & Shiffrin, R. M. (2015). Bayesian model comparison favors quantum over standard decision theory account of dynamic inconsistency. Decision, 2(1), 1.
 """
-struct QDIM{T<:Real} <: AbstractQDIM
+struct QDIM{T <: Real} <: AbstractQDIM
     α::T
     λ::T
     w₁::T
