@@ -93,22 +93,28 @@ end
     data = rand.(model, outcomes1, outcomes2, won, ns)
 
     γs = range(0.8 * parms.γ, 1.2 * parms.γ, length = 100)
-    LLs = map(γ -> sum(logpdf.(QDIM(; parms..., γ), outcomes1, outcomes2, won, ns, data)), γs)
+    LLs =
+        map(γ -> sum(logpdf.(QDIM(; parms..., γ), outcomes1, outcomes2, won, ns, data)), γs)
     _, mxi = findmax(LLs)
     @test γs[mxi] ≈ parms.γ rtol = 1e-2
 
     αs = range(0.8 * parms.α, 1.2 * parms.α, length = 100)
-    LLs = map(α -> sum(logpdf.(QDIM(; parms..., α), outcomes1, outcomes2, won, ns, data)), αs)
+    LLs =
+        map(α -> sum(logpdf.(QDIM(; parms..., α), outcomes1, outcomes2, won, ns, data)), αs)
     _, mxi = findmax(LLs)
     @test αs[mxi] ≈ parms.α rtol = 1e-2
 
     λs = range(0.8 * parms.λ, 1.2 * parms.λ, length = 100)
-    LLs = map(λ -> sum(logpdf.(QDIM(; parms..., λ), outcomes1, outcomes2, won, ns, data)), λs)
+    LLs =
+        map(λ -> sum(logpdf.(QDIM(; parms..., λ), outcomes1, outcomes2, won, ns, data)), λs)
     _, mxi = findmax(LLs)
     @test λs[mxi] ≈ parms.λ rtol = 1e-1
 
     w₁s = range(0.8 * parms.w₁, 1.2 * parms.w₁, length = 100)
-    LLs = map(w₁ -> sum(logpdf.(QDIM(; parms..., w₁), outcomes1, outcomes2, won, ns, data)), w₁s)
+    LLs = map(
+        w₁ -> sum(logpdf.(QDIM(; parms..., w₁), outcomes1, outcomes2, won, ns, data)),
+        w₁s
+    )
     _, mxi = findmax(LLs)
     @test w₁s[mxi] ≈ parms.w₁ rtol = 1e-2
 end
