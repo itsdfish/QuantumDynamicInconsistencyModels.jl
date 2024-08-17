@@ -434,4 +434,3 @@ function predict_temp(model::AbstractQDIM, outcomes1, outcomes2; t = π / 2)
 
     return [p_p_aw / p_p_w, p_p_al / p_p_l, p_f_a]
 end
-
