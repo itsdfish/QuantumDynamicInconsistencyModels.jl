@@ -10,7 +10,7 @@ using SafeTestsets
 
         n = 100_000
 
-        parms = (α = 0.9, λ = 1, m = .30, w₁ = 0.5, γ = -1.74)
+        parms = (α = 0.9, λ = 1, m = 0.30, w₁ = 0.5, γ = -1.74)
 
         model = QDIM(; parms...)
         outcomes1 = [2, -1]
@@ -32,7 +32,7 @@ using SafeTestsets
 
         n = 100_000
 
-        parms = (α = 0.9, λ = 2, w₁ = 0.5, m = .30, γ = 2.5)
+        parms = (α = 0.9, λ = 2, w₁ = 0.5, m = 0.30, γ = 2.5)
 
         model = QDIM(; parms...)
         outcomes1 = [2, -1]
@@ -82,33 +82,33 @@ end
 
     Random.seed!(410)
 
-    parms = (α = 0.9, λ = 2, m=.3, w₁ = 0.5, γ = 2.5)
+    parms = (α = 0.9, λ = 2, m = 0.3, w₁ = 0.5, γ = 2.5)
 
     outcomes1 = [[2, -1], [5, -3], [0.5, -0.25], [2, -2], [5, -5], [0.5, -0.50]]
     outcomes2 = [[2, -1], [5, -3], [0.5, -0.25], [2, -2], [5, -5], [0.5, -0.50]]
-    won = [true, false, true, true, false, false, true]
+    won = [true, false, true, true, false, false]
 
-    n = 20_000
+    ns = fill(20_000, 6)
     model = QDIM(; parms...)
-    data = rand(model, outcomes1, outcomes2, won, n)
+    data = rand.(model, outcomes1, outcomes2, won, ns)
 
     γs = range(0.8 * parms.γ, 1.2 * parms.γ, length = 100)
-    LLs = map(γ -> logpdf(QDIM(; parms..., γ), outcomes1, outcomes2, won, data, n), γs)
+    LLs = map(γ -> sum(logpdf.(QDIM(; parms..., γ), outcomes1, outcomes2, won, ns, data)), γs)
     _, mxi = findmax(LLs)
     @test γs[mxi] ≈ parms.γ rtol = 1e-2
 
     αs = range(0.8 * parms.α, 1.2 * parms.α, length = 100)
-    LLs = map(α -> logpdf(QDIM(; parms..., α), outcomes1, outcomes2, won, data, n), αs)
+    LLs = map(α -> sum(logpdf.(QDIM(; parms..., α), outcomes1, outcomes2, won, ns, data)), αs)
     _, mxi = findmax(LLs)
     @test αs[mxi] ≈ parms.α rtol = 1e-2
 
     λs = range(0.8 * parms.λ, 1.2 * parms.λ, length = 100)
-    LLs = map(λ -> logpdf(QDIM(; parms..., λ), outcomes1, outcomes2, won, data, n), λs)
+    LLs = map(λ -> sum(logpdf.(QDIM(; parms..., λ), outcomes1, outcomes2, won, ns, data)), λs)
     _, mxi = findmax(LLs)
     @test λs[mxi] ≈ parms.λ rtol = 1e-1
 
     w₁s = range(0.8 * parms.w₁, 1.2 * parms.w₁, length = 100)
-    LLs = map(w₁ -> logpdf(QDIM(; parms..., w₁), outcomes1, outcomes2, won, data, n), w₁s)
+    LLs = map(w₁ -> sum(logpdf.(QDIM(; parms..., w₁), outcomes1, outcomes2, won, ns, data)), w₁s)
     _, mxi = findmax(LLs)
     @test w₁s[mxi] ≈ parms.w₁ rtol = 1e-2
 end
@@ -135,8 +135,8 @@ end
 #     end
 # end
 
-@safetestset "predict_given_win" begin 
-    @safetestset "1" begin 
+@safetestset "predict_given_win" begin
+    @safetestset "1" begin
         using QuantumDynamicInconsistencyModels
         using QuantumDynamicInconsistencyModels: predict_given_win
         using Test
@@ -150,7 +150,7 @@ end
         @test preds ≈ preds_true atol = 1e-4
     end
 
-    @safetestset "2" begin 
+    @safetestset "2" begin
         using QuantumDynamicInconsistencyModels
         using QuantumDynamicInconsistencyModels: predict_given_win
         using Test
@@ -165,22 +165,22 @@ end
     end
 end
 
-@safetestset "predict_given_loss" begin 
-    @safetestset "1" begin 
+@safetestset "predict_given_loss" begin
+    @safetestset "1" begin
         using QuantumDynamicInconsistencyModels
         using QuantumDynamicInconsistencyModels: predict_given_loss
         using Test
-        
+
         model = QDIM(; α = 0.70, λ = 2.0, w₁ = 0.50, m = 0.50, γ = 2.5)
         outcomes1 = [2, -1]
         outcomes2 = [2, -1]
         preds = predict_given_loss(model, outcomes1, outcomes2)
-        preds_true = [0.66995,  0.69627]
+        preds_true = [0.66995, 0.69627]
 
         @test preds ≈ preds_true atol = 1e-4
     end
 
-    @safetestset "2" begin 
+    @safetestset "2" begin
         using QuantumDynamicInconsistencyModels
         using QuantumDynamicInconsistencyModels: predict_given_loss
         using Test
@@ -195,12 +195,12 @@ end
     end
 end
 
-@safetestset "predict" begin 
-    @safetestset "loss1" begin 
+@safetestset "predict" begin
+    @safetestset "loss1" begin
         using QuantumDynamicInconsistencyModels
         using QuantumDynamicInconsistencyModels: predict
         using Test
-        
+
         model = QDIM(; α = 0.70, λ = 2.0, w₁ = 0.50, m = 0.50, γ = 2.5)
         outcomes1 = [2, -1]
         outcomes2 = [2, -1]
@@ -210,7 +210,7 @@ end
         @test preds ≈ preds_true atol = 1e-4
     end
 
-    @safetestset "loss2" begin 
+    @safetestset "loss2" begin
         using QuantumDynamicInconsistencyModels
         using QuantumDynamicInconsistencyModels: predict
         using Test
@@ -224,21 +224,21 @@ end
         @test preds ≈ preds_true atol = 1e-4
     end
 
-    @safetestset "win1" begin 
+    @safetestset "win1" begin
         using QuantumDynamicInconsistencyModels
         using QuantumDynamicInconsistencyModels: predict
         using Test
-        
+
         model = QDIM(; α = 0.70, λ = 2.0, w₁ = 0.50, m = 0.50, γ = 2.5)
         outcomes1 = [2, -1]
         outcomes2 = [2, -1]
         preds = predict(model, outcomes1, outcomes2, true)
-        preds_true = [ 0.55582, 0.11413, 0.10880, 0.22125]
+        preds_true = [0.55582, 0.11413, 0.10880, 0.22125]
 
         @test preds ≈ preds_true atol = 1e-4
     end
 
-    @safetestset "win2" begin 
+    @safetestset "win2" begin
         using QuantumDynamicInconsistencyModels
         using QuantumDynamicInconsistencyModels: predict
         using Test

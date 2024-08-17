@@ -1,8 +1,8 @@
 """
-    predict(model::AbstractQDIM, outcomes1, outcomes2, won_first; t = π / 2)
+    predict(model::AbstractQDIM, outcomes1::Vector{<:Real}, outcomes2::Vector{<:Real}, won_first::Bool; t = π / 2)
 
 Returns the joint choice distribution for the planned and final decision of the 
-    second gamble conditioned on outcome of first gamble. 
+second gamble conditioned on outcome of first gamble. 
 
 1. probability of planning to accept second gamble and accepting second gamble
 2. probability of planning to accept second gamble and rejecting second gamble
@@ -12,8 +12,8 @@ Returns the joint choice distribution for the planned and final decision of the
 # Arguments
 
 - `model::AbstractQDIM`: a subtype of `AbstractQDIM``
-- `outcomes1::Vector{<:Number}`: outcomes for the first gamble
-- `outcomes2::Vector{<:Number}`: outcomes for the second gamble
+- `outcomes1::Vector{<:Real}`: outcomes for the first gamble
+- `outcomes2::Vector{<:Real}`: outcomes for the second gamble
 - `won_first`: set true if first gamble was won, in which case evaluation of final decision
     is conditioned on winning first gamble 
 
@@ -25,14 +25,20 @@ Returns the joint choice distribution for the planned and final decision of the
 
 ```julia 
 using QuantumDynamicInconsistencyModels
-model = QDIM(; α = .9, λ = 2, w₁ = .5, γ = -1.74)
+model = QDIM(; α = .9, λ = 2, w₁ = .5, γ = -1.74, m = .3)
 outcomes1 = [2,-1]
 outcomes2 = [2,-1]
 won_first = true
 preds = predict(model, outcomes1, outcomes2, won_first)
 ```
 """
-function predict(model::AbstractQDIM, outcomes1, outcomes2, won_first; t = π / 2)
+function predict(
+    model::AbstractQDIM,
+    outcomes1::Vector{<:Real},
+    outcomes2::Vector{<:Real},
+    won_first::Bool;
+    t = π / 2
+)
     (; γ, m) = model
     p_plan, p_final =
         won_first ? predict_given_win(model, outcomes1, outcomes2; t) :
@@ -49,14 +55,19 @@ Returns the probability of planning to accept the second gamble (not conditioned
 # Arguments
 
 - `model::AbstractQDIM`: a subtype of `AbstractQDIM``
-- `outcomes1::Vector{<:Number}`: outcomes for the first gamble
-- `outcomes2::Vector{<:Number}`: outcomes for the second gamble
+- `outcomes1::Vector{<:Real}`: outcomes for the first gamble
+- `outcomes2::Vector{<:Real}`: outcomes for the second gamble
 
 # Keywords
 
 - `t = π / 2`: time of decision
 """
-function predict_given_win(model::AbstractQDIM, outcomes1, outcomes2; t = π / 2)
+function predict_given_win(
+    model::AbstractQDIM,
+    outcomes1::Vector{<:Real},
+    outcomes2::Vector{<:Real};
+    t = π / 2
+)
     (; γ) = model
     # utility difference between accepting/rejecting second gamble given a (1) win,
     # or (2) loss in the first gamble 
@@ -105,15 +116,20 @@ Returns the probability of planning to accept the second gamble (not conditioned
 # Arguments
 
 - `model::AbstractQDIM`: a subtype of `AbstractQDIM``
-- `outcomes1::Vector{<:Number}`: outcomes for the first gamble
-- `outcomes2::Vector{<:Number}`: outcomes for the second gamble
+- `outcomes1::Vector{<:Real}`: outcomes for the first gamble
+- `outcomes2::Vector{<:Real}`: outcomes for the second gamble
 
 # Keywords
 
 - `t = π / 2`: time of decision
 """
-function predict_given_loss(model::AbstractQDIM, outcomes1, outcomes2; t = π / 2)
-    (; γ, m) = model
+function predict_given_loss(
+    model::AbstractQDIM,
+    outcomes1::Vector{<:Real},
+    outcomes2::Vector{<:Real};
+    t = π / 2
+)
+    (; γ) = model
     # utility difference between accepting/rejecting second gamble given a (1) win,
     # or (2) loss in the first gamble 
     d_win, d_loss = get_utility_diffs(model, outcomes1, outcomes2)
@@ -152,7 +168,11 @@ function predict_given_loss(model::AbstractQDIM, outcomes1, outcomes2; t = π / 
     return [p_p_a, p_f_a]
 end
 
-function predict_joint_probs(model::AbstractQDIM, p_plan, p_final)
+function predict_joint_probs(
+    model::AbstractQDIM,
+    p_plan::Real,
+    p_final::Real
+)
     (; m) = model
     # probability of planning to accept second gamble and accepting second gamble
     p_aa = p_plan * (m + (1 - m) * p_final)
@@ -210,31 +230,29 @@ function make_H2(γ)
     return H
 end
 
-function rand(model::AbstractQDIM, outcomes1, outcomes2, won_first; t = π / 2)
-    return rand(model, outcomes1, outcomes2, won_first, 1; t)
-end
-
 """
     rand(
         model::AbstractQDIM, 
-        outcomes1::Vector{<:Number}, 
-        outcomes2::Vector{<:Number}, 
+        outcomes1::Vector{<:Real}, 
+        outcomes2::Vector{<:Real}, 
         n::Int; 
         t = π / 2
     )
 
-Generates simulated data for the following conditions:
+Returns the joint choice distribution for the planned and final decision of the 
+second gamble conditioned on outcome of first gamble. 
 
-1. Accept second gamble after winning first gamble 
-2. Accept second gamble after losing first gamble
-3. Plan to accept second gamble before observing outcome
+1. probability of planning to accept second gamble and accepting second gamble
+2. probability of planning to accept second gamble and rejecting second gamble
+3. probability of planning to reject second gamble and accepting second gamble
+4. probability of planning to reject second gamble and rejecting second gamble
 
 # Arguments
 
 - `model::AbstractQDIM`: a subtype of `AbstractQDIM``
-- `outcomes1::Vector{<:Number}`: outcomes for the first gamble
-- `outcomes2::Vector{<:Number}`: outcomes for the second gamble 
-- `won_first`:
+- `outcomes1::Vector{<:Real}`: outcomes for the first gamble
+- `outcomes2::Vector{<:Real}`: outcomes for the second gamble 
+- `won_first::Bool`:
 - `n`: the number of trials per condition 
 
 # Keywords
@@ -254,61 +272,32 @@ data = rand(model, outcomes1, outcomes2, n_trials)
 """
 function rand(
     model::AbstractQDIM,
-    outcomes1::Vector{<:Number},
-    outcomes2::Vector{<:Number},
-    won_first,
+    outcomes1::Vector{<:Real},
+    outcomes2::Vector{<:Real},
+    won_first::Bool,
     n::Int;
-    t = π / 2,
+    t = π / 2
 )
     Θ = predict(model, outcomes1, outcomes2, won_first; t)
     return rand(Multinomial(n, Θ))
 end
 
-function rand(model::AbstractQDIM, outcomes1, outcomes2, won_first, n::Int; t = π / 2)
-    return map(x -> rand(model, x..., n, ; t), zip(outcomes1, outcomes2, won_first))
-end
-
-"""
-    rand(model::AbstractQDIM, outcomes1, outcomes2, won_first, n; t = π / 2)
-
-Generates simulated data for the following conditions:
-
-1. Accept second gamble after winning first gamble 
-2. Accept second gamble after losing first gamble
-3. Plan to accept second gamble before observing outcome
-
-# Arguments
-
-- `model::AbstractQDIM`: a subtype of `AbstractQDIM``
-- `outcomes1::Vector{<:Number}`: outcomes for the first gamble
-- `outcomes2::Vector{<:Number}`: outcomes for the second gamble 
-- `n`: the number of trials per condition 
-
-# Keywords
-
-- `t = π / 2`: time of decision
-
-# Example 
-
-```julia 
-using QuantumDynamicInconsistencyModels
-model = QDIM(; α = .9, λ = 1, w₁ = .5, γ = -1.74)
-outcomes1 = [[2,-1],[3,-2]]
-outcomes2 = [[2,-1],[3,-2]]
-n_trials = [10,20]
-data = rand(model, outcomes1, outcomes2, n_trials)
-```
-"""
-function rand(model::AbstractQDIM, outcomes1, outcomes2, won_first, n; t = π / 2)
-    return map(x -> rand(model, x..., won_first; t), zip(outcomes1, outcomes2, n))
+function rand(
+    model::AbstractQDIM,
+    outcomes1::Vector{<:Real},
+    outcomes2::Vector{<:Real},
+    won_first::Bool;
+    t = π / 2
+)
+    return rand(model, outcomes1, outcomes2, won_first, 1; t)
 end
 
 """
     logpdf(
         model::AbstractQDIM, 
-        outcomes1::Vector{<:Number}, 
-        outcomes2::Vector{<:Number},
-        data::Vector{<:Number}, 
+        outcomes1::Vector{<:Real}, 
+        outcomes2::Vector{<:Real},
+        data::Vector{<:Real}, 
         n::Int; 
         t = π / 2
     )
@@ -341,76 +330,22 @@ data = rand(model, outcomes1, outcomes2, n_trials)
 """
 function logpdf(
     model::AbstractQDIM,
-    outcomes1::Vector{<:Number},
-    outcomes2::Vector{<:Number},
-    won_first,
-    data::Vector{<:Number},
-    n::Int;
-    t = π / 2,
+    outcomes1::Vector{<:Real},
+    outcomes2::Vector{<:Real},
+    won_first::Bool,
+    n::Int,
+    data::Vector{<:Real};
+    t = π / 2
 )
     Θ = predict(model, outcomes1, outcomes2, won_first; t)
     return logpdf(Multinomial(n, Θ), data)
 end
 
-"""
-    rand(model::AbstractQDIM, outcomes1, outcomes2, n; t = π / 2)
-
-Generates simulated data for the following conditions:
-
-1. Accept second gamble after winning first gamble 
-2. Accept second gamble after losing first gamble
-3. Plan to accept second gamble before observing outcome
-
-# Arguments
-
-- `model::AbstractQDIM`: a subtype of `AbstractQDIM``
-- `outcomes1`: a vector of vectors where each subvector contains outcomes for the first gamble of a given trial
-- `outcomes2`: a vector of vectors where each subvector contains outcomes for the second gamble of a given trial
-- `n::Int`: the number of trials per condition per gamble
-
-# Keywords
-
-- `t = π / 2`: time of decision
-
-# Example 
-
-```julia 
-using QuantumDynamicInconsistencyModels
-model = QDIM(; α = .9, λ = 1, w₁ = .5, γ = -1.74)
-outcomes1 = [[2,-1],[3,-2]]
-outcomes2 = [[2,-1],[3,-2]]
-n_trials = 10
-data = rand(model, outcomes1, outcomes2, n_trials)
-```
-"""
-function logpdf(
-    model::AbstractQDIM,
-    outcomes1,
-    outcomes2,
-    won_first,
-    data,
-    n::Int;
-    t = π / 2,
-)
-    return mapreduce(x -> logpdf(model, x..., n; t),
-        +,
-        zip(outcomes1, outcomes2, won_first, data),
-    )
-end
-
-function logpdf(model::AbstractQDIM, outcomes1, outcomes2, data, won_first, n; t = π / 2)
-    return mapreduce(
-        x -> logpdf(model, x..., won_first; t),
-        +,
-        zip(outcomes1, outcomes2, data, n),
-    )
-end
-
-loglikelihood(d::AbstractQDIM, data::Tuple) = logpdf(d, data...)
+loglikelihood(d::AbstractQDIM, data::Tuple) = sum(logpdf.(d, data...))
 
 logpdf(model::AbstractQDIM, x::Tuple) = logpdf(model, x...)
 
-function get_expected_utility(model::AbstractQDIM, vals::Vector{<:Number})
+function get_expected_utility(model::AbstractQDIM, vals::Vector{<:Real})
     (; λ, α, w₁) = model
     utils = get_utility.(vals, α, λ)
     w = [w₁, 1 - w₁]

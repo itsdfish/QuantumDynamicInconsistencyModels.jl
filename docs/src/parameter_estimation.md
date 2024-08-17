@@ -18,20 +18,22 @@ using Turing
 
 The next step is to generate some simulated data from which the parameters can be estimated. In the code block below, the utility parameter $\mu_d$ is set to one and the entanglement parameter is set to $\gamma = 2$.  A total of 50 trials is generated for each of the three conditions. The resulting values represent the number of defections per condition out of 50.
 ```julia
-Random.seed!(2015)
+Random.seed!(32)
 parms = (
   α = .9, 
   λ = 2,
-  w_win = .5,
+  w₁ = .5,
+  m = .30,
   γ = 2.5
 )
 
-outcomes1 = [[2,-1],[6,-3],[3,-1],[7,-2],[-.50,-.75]]
-outcomes2 = [[2,-1],[6,-3],[3,-1],[7,-2],[-.50,-.75]]
+outcomes1 = [[2,-1],[6,-3],[3,-1],[7,-2],[-.50,-.75], [2,-3]]
+outcomes2 = [[2,-1],[6,-3],[3,-1],[7,-2],[-.50,-.75], [2,-3]]
+win_gamble1 = [true, false, true, true, false, true]
+ns = fill(100, 6)
 
-n = 10
 model = QDIM(; parms...)
-data = rand(model, outcomes1, outcomes2, n)
+data = rand.(model, outcomes1, outcomes2, win_gamble1, ns)
 ```
 
 ## Define Turing Model
@@ -41,10 +43,12 @@ The next step is to define a Turing model with the `@model` macro. For simplicit
 ```julia 
 @model function turing_model(data, parms)
     γ ~ Normal(0, 3)
-    data ~ QDIM(; parms..., γ)
+    m ~ Beta(1, 1)
+    data ~ QDIM(; parms..., γ, m)
 end
-_data = (outcomes1,outcomes2,data,n)
-sampler = turing_model(_data, parms)
+
+_data = (outcomes1, outcomes2, win_gamble1, ns, data)
+estimator = turing_model(_data, parms)
 ```
 
 ## Estimate Parameters
@@ -52,10 +56,11 @@ sampler = turing_model(_data, parms)
 To estimate the parameters, we need to pass the Turing model to `pigeons`. The second command converts the output to an `MCMCChain` object, which can be used for plotting
 ```julia
 pt = pigeons(
-    target = TuringLogPotential(sampler), 
-    record = [traces],
-    multithreaded = true)
-samples = Chains(sample_array(pt), ["γ","LL"])
+  target = TuringLogPotential(estimator), 
+  record = [traces],
+  multithreaded = true
+)
+samples = Chains(sample_array(pt), ["γ", "m", "LL"])
 ```
 The trace of the `pigeon`'s sampler is given below:
 ```julia

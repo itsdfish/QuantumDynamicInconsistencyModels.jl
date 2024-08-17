@@ -10,11 +10,13 @@ A model object for the Quantum Prisoner's Dilemma Model. The QDIM has four basis
 3. lose first gamble, accept second gamble 
 4. lose first gamble, decline second gamble 
 
-The bases are orthonormal and in standard form. The model generates predictions for three conditions:
+The bases are orthonormal and in standard form. The model returns the joint choice distribution for the planned and final decision of the 
+second gamble conditioned on outcome of first gamble. 
 
-1. Accept second gamble after winning first gamble 
-2. Accept second gamble after losing first gamble
-3. Plan to accept second gamble before observing outcome
+1. probability of planning to accept second gamble and accepting second gamble
+2. probability of planning to accept second gamble and rejecting second gamble
+3. probability of planning to reject second gamble and accepting second gamble
+4. probability of planning to reject second gamble and rejecting second gamble
 
 # Fields 
 
@@ -41,7 +43,7 @@ model = QDIM(; α = .9, λ = 2, w₁ = .5, m, = .6, γ = -1.74)
 
 Busemeyer, J. R., Wang, Z., & Shiffrin, R. M. (2015). Bayesian model comparison favors quantum over standard decision theory account of dynamic inconsistency. Decision, 2(1), 1.
 """
-struct QDIM{T<:Real} <: AbstractQDIM
+struct QDIM{T <: Real} <: AbstractQDIM
     α::T
     λ::T
     w₁::T
