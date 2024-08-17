@@ -302,11 +302,13 @@ end
         t = π / 2
     )
 
-Returns the joint log density given data for the following conditions:
+Returns the joint choice distribution for the planned and final decision of the 
+second gamble conditioned on outcome of first gamble. 
 
-1. Player 2 is told that player 1 defected
-2. Player 2 is told that player 1 cooperated
-3. Player 2 is not informed of player 1's action
+1. probability of planning to accept second gamble and accepting second gamble
+2. probability of planning to accept second gamble and rejecting second gamble
+3. probability of planning to reject second gamble and accepting second gamble
+4. probability of planning to reject second gamble and rejecting second gamble
 
 # Arguments
 
