@@ -1,13 +1,14 @@
 """
-    predict(model::AbstractQDIM, outcomes1::Vector{<:Real}, outcomes2::Vector{<:Real}, won_first::Bool; t = π / 2)
+    predict(
+        model::AbstractQDIM,
+        outcomes1::Vector{<:Real},
+        outcomes2::Vector{<:Real},
+        won_first::Bool;
+        t = π / 2
+    )
 
 Returns the joint choice distribution for the planned and final decision of the 
 second gamble conditioned on outcome of first gamble. 
-
-1. probability of planning to accept second gamble and accepting second gamble
-2. probability of planning to accept second gamble and rejecting second gamble
-3. probability of planning to reject second gamble and accepting second gamble
-4. probability of planning to reject second gamble and rejecting second gamble
 
 # Arguments
 
@@ -20,6 +21,15 @@ second gamble conditioned on outcome of first gamble.
 # Keywords
 
 - `t = π / 2`: time of decision
+
+# Returns 
+
+Returns a vector respresenting the joint distribution over planned and final choices, where elements correspond to 
+
+1. probability of planning to accept second gamble and accepting second gamble
+2. probability of planning to accept second gamble and rejecting second gamble
+3. probability of planning to reject second gamble and accepting second gamble
+4. probability of planning to reject second gamble and rejecting second gamble
 
 # Example 
 
@@ -47,10 +57,15 @@ function predict(
 end
 
 """
-    predict_given_win(model::AbstractQDIM, outcomes1, outcomes2; t = π / 2)
+    predict_given_win(
+        model::AbstractQDIM,
+        outcomes1::Vector{<:Real},
+        outcomes2::Vector{<:Real};
+        t = π / 2
+    )
 
 Returns the probability of planning to accept the second gamble (not conditioned on an anticipated outcome) and
-    the probability of accepting the second gamble in the final decision conditioned on winning the first gamble.
+the probability of accepting the second gamble in the final decision conditioned on winning the first gamble.
 
 # Arguments
 
@@ -108,7 +123,12 @@ function predict_given_win(
 end
 
 """
-    predict_given_loss(model::AbstractQDIM, outcomes1, outcomes2; t = π / 2)
+    predict_given_loss(
+        model::AbstractQDIM,
+        outcomes1::Vector{<:Real},
+        outcomes2::Vector{<:Real};
+        t = π / 2
+    )
 
 Returns the probability of planning to accept the second gamble (not conditioned on an anticipated outcome) and
     the probability of accepting the second gamble in the final decision conditioned on lossing the first gamble.
@@ -168,6 +188,33 @@ function predict_given_loss(
     return [p_p_a, p_f_a]
 end
 
+""" 
+    predict_joint_probs(
+        model::AbstractQDIM,
+        p_plan::Real,
+        p_final::Real
+    )
+
+Returns the joint choice distribution for the planned and final decision of the 
+second gamble conditioned on outcome of first gamble. The joint probability distribution includes 
+the probability of repeating of remembering and repeating the choice, denoted  by parameter `m`, which 
+allows dependencies in the joint probability distribution 
+
+# Arguments
+
+- `model::AbstractQDIM`: a subtype of `AbstractQDIM``
+- `p_plan::Real`: probability of planning to accept gamble 
+- `p_final::Real`: probability of accepting gamble in final decision 
+
+# Returns 
+
+Returns a vector respresenting the joint distribution over planned and final choices, where elements correspond to 
+
+1. probability of planning to accept second gamble and accepting second gamble
+2. probability of planning to accept second gamble and rejecting second gamble
+3. probability of planning to reject second gamble and accepting second gamble
+4. probability of planning to reject second gamble and rejecting second gamble
+"""
 function predict_joint_probs(
     model::AbstractQDIM,
     p_plan::Real,
@@ -239,25 +286,30 @@ end
         t = π / 2
     )
 
-Returns the joint choice distribution for the planned and final decision of the 
+Returns samples from the joint choice distribution for the planned and final decision of the 
 second gamble conditioned on outcome of first gamble. 
 
-1. probability of planning to accept second gamble and accepting second gamble
-2. probability of planning to accept second gamble and rejecting second gamble
-3. probability of planning to reject second gamble and accepting second gamble
-4. probability of planning to reject second gamble and rejecting second gamble
 
 # Arguments
 
 - `model::AbstractQDIM`: a subtype of `AbstractQDIM``
 - `outcomes1::Vector{<:Real}`: outcomes for the first gamble
 - `outcomes2::Vector{<:Real}`: outcomes for the second gamble 
-- `won_first::Bool`:
+- `won_first::Bool`: true if first gamble won
 - `n`: the number of trials per condition 
 
 # Keywords
 
 - `t = π / 2`: time of decision
+
+# Returns 
+
+Returns a vector respresenting the samples from the joint distribution over planned and final choices, where elements correspond to 
+
+1. frequency of planning to accept second gamble and accepting second gamble
+2. frequency of planning to accept second gamble and rejecting second gamble
+3. frequency of planning to reject second gamble and accepting second gamble
+4. frequency of planning to reject second gamble and rejecting second gamble
 
 # Example 
 
@@ -302,8 +354,8 @@ end
         t = π / 2
     )
 
-Returns the joint choice distribution for the planned and final decision of the 
-second gamble conditioned on outcome of first gamble. 
+Returns the multinomial log loglikelihood for the joint planned decision and final decision of the 
+second gamble conditioned on outcome of first gamble. The joint distribution is as follows:
 
 1. probability of planning to accept second gamble and accepting second gamble
 2. probability of planning to accept second gamble and rejecting second gamble
@@ -313,8 +365,12 @@ second gamble conditioned on outcome of first gamble.
 # Arguments
 
 - `model::AbstractQDIM`: a subtype of `AbstractQDIM`
-- `n`: the number of trials per condition 
-- `n_d`: the number of defections in each condition 
+- `outcomes1::Vector{<:Real}`: the win and loss outcomes for stage 1 
+- `outcomes2::Vector{<:Real}`: the win and loss outcomes for stage 2
+- `won_first::Bool`: indicates true if the larger of the two outcomes is won
+- `n::Int`: the number of repetitions of the trial 
+ - `data::Vector{<:Real}`: a vector of response frequencies joint planned decision and final decision of the 
+    second gamble conditioned on outcome of first gamble. The frequencies correspond to the joint distribution above.
 
 # Keywords
 
@@ -357,7 +413,7 @@ end
 get_utility(v, α, λ) = v < 0 ? -λ * abs(v)^α : v^α
 
 """
-    get_utility_diffs(model::AbstractQDIM, outcomes1, outcomes2)
+    get_utility_diffs(model::AbstractQDIM, outcomes1::Vector{<:Real}, outcomes2::Vector{<:Real})
 
 Computes the utility differences for chosing accepting gamble given a win and given a loss
 during the previous stage. 
@@ -365,15 +421,19 @@ during the previous stage.
 # Arguments
 
 - `model::AbstractQDIM`: a subtype of `AbstractQDIM`
-- `outcomes1`: the win loss outcomes for stage 1 
-- `outcomes2`: the win loss outcomes for stage 2
+- `outcomes1::Vector{<:Real}`: the win and loss outcomes for stage 1 
+- `outcomes2::Vector{<:Real}`: the win and loss outcomes for stage 2
 
 # Returns 
 
 - `util_diffs`: utility diff between taking second gamble and rejecting second gamble. The first element
 is conditioned on winning in the first stage and the second element is conditioned on losing in the first stage.
 """
-function get_utility_diffs(model::AbstractQDIM, outcomes1, outcomes2)
+function get_utility_diffs(
+    model::AbstractQDIM,
+    outcomes1::Vector{<:Real},
+    outcomes2::Vector{<:Real}
+)
     (; α, λ) = model
     vals = map(x -> outcomes2 .+ x, outcomes1)
     # utility of gamble 1 outcomes 

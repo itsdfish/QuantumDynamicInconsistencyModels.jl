@@ -27,14 +27,21 @@ parms = (
   γ = 2.5
 )
 
-outcomes1 = [[2,-1],[6,-3],[3,-1],[7,-2],[-.50,-.75], [2,-3]]
-outcomes2 = [[2,-1],[6,-3],[3,-1],[7,-2],[-.50,-.75], [2,-3]]
+outcomes1 = [[2,-1],[6,-3],[3,-1],[7,-2],[.50,-.75], [2,-3]]
+outcomes2 = [[2,-1],[6,-3],[3,-1],[7,-2],[.50,-.75], [2,-3]]
 win_gamble1 = [true, false, true, true, false, true]
-ns = fill(100, 6)
+ns = fill(10, 6)
 
 model = QDIM(; parms...)
 data = rand.(model, outcomes1, outcomes2, win_gamble1, ns)
 ```
+
+The variable `data` is a vector of vectors in which each sub-vector contains multinomial frequencies of joint plan and final decisions. The elements of each sub-vector are defined as follows
+
+1. frequency of planning to accept second gamble and accepting second gamble
+2. frequency of planning to accept second gamble and rejecting second gamble
+3. frequency of planning to reject second gamble and accepting second gamble
+4. frequency of planning to reject second gamble and rejecting second gamble
 
 ## Define Turing Model
 
@@ -42,7 +49,7 @@ The next step is to define a Turing model with the `@model` macro. For simplicit
 
 ```julia 
 @model function turing_model(data, parms)
-    γ ~ Normal(0, 3)
+    γ ~ Normal(0, 10)
     m ~ Beta(1, 1)
     data ~ QDIM(; parms..., γ, m)
 end

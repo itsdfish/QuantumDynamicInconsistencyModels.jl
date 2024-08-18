@@ -1,6 +1,6 @@
 # QuantumDynamicInconsistencyModels.jl
 
-This package contains code for a quantum cognition model of inteference effects in the prisoner's dilemma. 
+This package contains code for a quantum cognition model of dynamic inconsistency in two-stage decision tasks. 
 
 # Installation
 
@@ -20,4 +20,5 @@ add QuantumDynamicInconsistencyModels
 
 # References 
 
-Pothos, E. M., & Busemeyer, J. R. (2009). A quantum probability explanation for violations of ‘rational’decision theory. Proceedings of the Royal Society B: Biological Sciences, 276(1665), 2171-2178.
+Busemeyer, J. R., Wang, Z., & Shiffrin, R. M. (2015). Bayesian model comparison favors quantum over standard decision theory account of dynamic inconsistency. Decision, 2(1), 1.
+
