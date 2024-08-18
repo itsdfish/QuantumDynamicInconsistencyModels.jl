@@ -10,7 +10,7 @@ using SafeTestsets
 
         n = 100_000
 
-        parms = (α = 0.9, λ = 1, m = 0.30, w₁ = 0.5, γ = -1.74)
+        parms = (α = 0.9, λ = 1, p_rep = 0.30, w₁ = 0.5, γ = -1.74)
 
         model = QDIM(; parms...)
         outcomes1 = [2, -1]
@@ -32,7 +32,7 @@ using SafeTestsets
 
         n = 100_000
 
-        parms = (α = 0.9, λ = 2, w₁ = 0.5, m = 0.30, γ = 2.5)
+        parms = (α = 0.9, λ = 2, w₁ = 0.5, p_rep = 0.30, γ = 2.5)
 
         model = QDIM(; parms...)
         outcomes1 = [2, -1]
@@ -82,7 +82,7 @@ end
 
     Random.seed!(410)
 
-    parms = (α = 0.9, λ = 2, m = 0.3, w₁ = 0.5, γ = 2.5)
+    parms = (α = 0.9, λ = 2, p_rep = 0.3, w₁ = 0.5, γ = 2.5)
 
     outcomes1 = [[2, -1], [5, -3], [0.5, -0.25], [2, -2], [5, -5], [0.5, -0.50]]
     outcomes2 = [[2, -1], [5, -3], [0.5, -0.25], [2, -2], [5, -5], [0.5, -0.50]]
@@ -147,7 +147,7 @@ end
         using QuantumDynamicInconsistencyModels: predict_given_win
         using Test
 
-        model = QDIM(; α = 0.70, λ = 2.0, w₁ = 0.50, m = 0.50, γ = 2.5)
+        model = QDIM(; α = 0.70, λ = 2.0, w₁ = 0.50, p_rep = 0.50, γ = 2.5)
         outcomes1 = [2, -1]
         outcomes2 = [2, -1]
         preds = predict_given_win(model, outcomes1, outcomes2)
@@ -161,7 +161,7 @@ end
         using QuantumDynamicInconsistencyModels: predict_given_win
         using Test
 
-        model = QDIM(; α = 0.80, λ = 1.5, w₁ = 0.50, m = 0.30, γ = -2.0)
+        model = QDIM(; α = 0.80, λ = 1.5, w₁ = 0.50, p_rep = 0.30, γ = -2.0)
         outcomes1 = [20, -22.0]
         outcomes2 = [20, -22.0]
         preds = predict_given_win(model, outcomes1, outcomes2)
@@ -177,7 +177,7 @@ end
         using QuantumDynamicInconsistencyModels: predict_given_loss
         using Test
 
-        model = QDIM(; α = 0.70, λ = 2.0, w₁ = 0.50, m = 0.50, γ = 2.5)
+        model = QDIM(; α = 0.70, λ = 2.0, w₁ = 0.50, p_rep = 0.50, γ = 2.5)
         outcomes1 = [2, -1]
         outcomes2 = [2, -1]
         preds = predict_given_loss(model, outcomes1, outcomes2)
@@ -191,7 +191,7 @@ end
         using QuantumDynamicInconsistencyModels: predict_given_loss
         using Test
 
-        model = QDIM(; α = 0.80, λ = 1.5, w₁ = 0.50, m = 0.30, γ = -2.0)
+        model = QDIM(; α = 0.80, λ = 1.5, w₁ = 0.50, p_rep = 0.30, γ = -2.0)
         outcomes1 = [20, -22.0]
         outcomes2 = [20, -22.0]
         preds = predict_given_loss(model, outcomes1, outcomes2)
@@ -207,7 +207,7 @@ end
         using QuantumDynamicInconsistencyModels: predict
         using Test
 
-        model = QDIM(; α = 0.70, λ = 2.0, w₁ = 0.50, m = 0.50, γ = 2.5)
+        model = QDIM(; α = 0.70, λ = 2.0, w₁ = 0.50, p_rep = 0.50, γ = 2.5)
         outcomes1 = [2, -1]
         outcomes2 = [2, -1]
         preds = predict(model, outcomes1, outcomes2, false)
@@ -221,7 +221,7 @@ end
         using QuantumDynamicInconsistencyModels: predict
         using Test
 
-        model = QDIM(; α = 0.80, λ = 1.5, w₁ = 0.50, m = 0.30, γ = -2.0)
+        model = QDIM(; α = 0.80, λ = 1.5, w₁ = 0.50, p_rep = 0.30, γ = -2.0)
         outcomes1 = [20, -22.0]
         outcomes2 = [20, -22.0]
         preds = predict(model, outcomes1, outcomes2, false)
@@ -235,7 +235,7 @@ end
         using QuantumDynamicInconsistencyModels: predict
         using Test
 
-        model = QDIM(; α = 0.70, λ = 2.0, w₁ = 0.50, m = 0.50, γ = 2.5)
+        model = QDIM(; α = 0.70, λ = 2.0, w₁ = 0.50, p_rep = 0.50, γ = 2.5)
         outcomes1 = [2, -1]
         outcomes2 = [2, -1]
         preds = predict(model, outcomes1, outcomes2, true)
@@ -249,7 +249,7 @@ end
         using QuantumDynamicInconsistencyModels: predict
         using Test
 
-        model = QDIM(; α = 0.80, λ = 1.5, w₁ = 0.50, m = 0.30, γ = -2.0)
+        model = QDIM(; α = 0.80, λ = 1.5, w₁ = 0.50, p_rep = 0.30, γ = -2.0)
         outcomes1 = [20, -22.0]
         outcomes2 = [20, -22.0]
         preds = predict(model, outcomes1, outcomes2, true)
@@ -265,7 +265,7 @@ end
         using QuantumDynamicInconsistencyModels: get_utility_diffs
         using Test
 
-        model = QDIM(; α = 0.65, λ = 1.6, m = 0.50, w₁ = 0.5, γ = 2.2)
+        model = QDIM(; α = 0.65, λ = 1.6, p_rep = 0.50, w₁ = 0.5, γ = 2.2)
         outcomes1 = [2, -1]
         outcomes2 = [2, -1]
         d = get_utility_diffs(model, outcomes1, outcomes2)
@@ -279,7 +279,7 @@ end
         using QuantumDynamicInconsistencyModels: get_utility_diffs
         using Test
 
-        model = QDIM(; α = 0.50, λ = 2, m = 0.50, w₁ = 0.5, γ = 2.2)
+        model = QDIM(; α = 0.50, λ = 2, p_rep = 0.50, w₁ = 0.5, γ = 2.2)
         outcomes1 = [9, -4]
         outcomes2 = [9, -4]
         d = get_utility_diffs(model, outcomes1, outcomes2)

@@ -49,7 +49,6 @@ function predict(
     won_first::Bool;
     t = π / 2
 )
-    (; γ, m) = model
     p_plan, p_final =
         won_first ? predict_given_win(model, outcomes1, outcomes2; t) :
         predict_given_loss(model, outcomes1, outcomes2; t)
@@ -220,15 +219,15 @@ function predict_joint_probs(
     p_plan::Real,
     p_final::Real
 )
-    (; m) = model
+    (; p_rep) = model
     # probability of planning to accept second gamble and accepting second gamble
-    p_aa = p_plan * (m + (1 - m) * p_final)
+    p_aa = p_plan * (p_rep + (1 - p_rep) * p_final)
     # probability of planning to accept second gamble and rejecting second gamble
-    p_ar = p_plan * (1 - m) * (1 - p_final)
+    p_ar = p_plan * (1 - p_rep) * (1 - p_final)
     # probability of planning to reject second gamble and accepting second gamble
-    p_ra = (1 - p_plan) * (1 - m) * p_final
+    p_ra = (1 - p_plan) * (1 - p_rep) * p_final
     # probability of planning to reject second gamble and rejecting second gamble
-    p_rr = (1 - p_plan) * (m + (1 - m) * (1 - p_final))
+    p_rr = (1 - p_plan) * (p_rep + (1 - p_rep) * (1 - p_final))
     return [p_aa, p_ar, p_ra, p_rr]
 end
 
