@@ -348,8 +348,7 @@ end
         model::AbstractQDIM, 
         outcomes1::Vector{<:Real}, 
         outcomes2::Vector{<:Real},
-        data::Vector{<:Real}, 
-        n::Int; 
+        data::Vector{<:Int}, 
         t = π / 2
     )
 
@@ -367,8 +366,7 @@ second gamble conditioned on outcome of first gamble. The joint distribution is 
 - `outcomes1::Vector{<:Real}`: the win and loss outcomes for stage 1 
 - `outcomes2::Vector{<:Real}`: the win and loss outcomes for stage 2
 - `won_first::Bool`: indicates true if the larger of the two outcomes is won
-- `n::Int`: the number of repetitions of the trial 
- - `data::Vector{<:Real}`: a vector of response frequencies joint planned decision and final decision of the 
+- ` data::Vector{<:Int}`: a vector of response frequencies joint planned decision and final decision of the 
     second gamble conditioned on outcome of first gamble. The frequencies correspond to the joint distribution above.
 
 # Keywords
@@ -390,11 +388,11 @@ function logpdf(
     outcomes1::Vector{<:Real},
     outcomes2::Vector{<:Real},
     won_first::Bool,
-    n::Int,
-    data::Vector{<:Real};
+    data::Vector{<:Int};
     t = π / 2
 )
     Θ = predict(model, outcomes1, outcomes2, won_first; t)
+    n = sum(data)
     return logpdf(Multinomial(n, Θ), data)
 end
 
