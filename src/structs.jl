@@ -36,7 +36,13 @@ second gamble conditioned on outcome of first gamble.
 
 ```julia
 using QuantumDynamicInconsistencyModels
-model = QDIM(; α = .9, λ = 2, w₁ = .5, p_rep, = .6, γ = -1.74)
+model = QDIM(; α = .9, λ = 2, w₁ = .5, p_rep = .6, γ = -1.74)
+outcomes1 = [2,-1]
+outcomes2 = [2,-1]
+n_trials = 10
+won_first = false
+data = rand(model, outcomes1, outcomes2, won_first, n_trials)
+logpdf(model, outcomes1, outcomes2, won_first, data)
 ```
 
 # References 

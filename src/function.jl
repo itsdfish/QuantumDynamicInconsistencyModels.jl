@@ -35,7 +35,7 @@ Returns a vector respresenting the joint distribution over planned and final cho
 
 ```julia 
 using QuantumDynamicInconsistencyModels
-model = QDIM(; α = .9, λ = 2, w₁ = .5, γ = -1.74, m = .3)
+model = QDIM(; α = .9, λ = 2, w₁ = .5, γ = -1.74, p_rep = .3)
 outcomes1 = [2,-1]
 outcomes2 = [2,-1]
 won_first = true
@@ -278,10 +278,11 @@ end
 
 """
     rand(
-        model::AbstractQDIM, 
-        outcomes1::Vector{<:Real}, 
-        outcomes2::Vector{<:Real}, 
-        n::Int; 
+        model::AbstractQDIM,
+        outcomes1::Vector{<:Real},
+        outcomes2::Vector{<:Real},
+        won_first::Bool,
+        n::Int;
         t = π / 2
     )
 
@@ -345,10 +346,11 @@ end
 
 """
     logpdf(
-        model::AbstractQDIM, 
-        outcomes1::Vector{<:Real}, 
+        model::AbstractQDIM,
+        outcomes1::Vector{<:Real},
         outcomes2::Vector{<:Real},
-        data::Vector{<:Int}, 
+        won_first::Bool,
+        data::Vector{<:Int};
         t = π / 2
     )
 
@@ -365,7 +367,7 @@ second gamble conditioned on outcome of first gamble. The joint distribution is 
 - `model::AbstractQDIM`: a subtype of `AbstractQDIM`
 - `outcomes1::Vector{<:Real}`: the win and loss outcomes for stage 1 
 - `outcomes2::Vector{<:Real}`: the win and loss outcomes for stage 2
-- `won_first::Bool`: indicates true if the larger of the two outcomes is won
+- `won_first::Bool`: indicates if the larger of the two outcomes is won
 - ` data::Vector{<:Int}`: a vector of response frequencies joint planned decision and final decision of the 
     second gamble conditioned on outcome of first gamble. The frequencies correspond to the joint distribution above.
 
@@ -376,11 +378,14 @@ second gamble conditioned on outcome of first gamble. The joint distribution is 
 # Example 
 
 ```julia 
-model = QDIM(; α = .9, λ = 1, w₁ = .5, γ = -1.74)
+using QuantumDynamicInconsistencyModels
+model = QDIM(; α = .9, λ = 2, w₁ = .5, p_rep = .6, γ = -1.74)
 outcomes1 = [2,-1]
 outcomes2 = [2,-1]
-n_trials = [10,20]
-data = rand(model, outcomes1, outcomes2, n_trials)
+n_trials = 10
+won_first = false
+data = rand(model, outcomes1, outcomes2, won_first, n_trials)
+logpdf(model, outcomes1, outcomes2, won_first, data)
 ```
 """
 function logpdf(
@@ -410,7 +415,11 @@ end
 get_utility(v, α, λ) = v < 0 ? -λ * abs(v)^α : v^α
 
 """
-    get_utility_diffs(model::AbstractQDIM, outcomes1::Vector{<:Real}, outcomes2::Vector{<:Real})
+    get_utility_diffs(
+        model::AbstractQDIM,
+        outcomes1::Vector{<:Real},
+        outcomes2::Vector{<:Real}
+    )
 
 Computes the utility differences for chosing accepting gamble given a win and given a loss
 during the previous stage. 

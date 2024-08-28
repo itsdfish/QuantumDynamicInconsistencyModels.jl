@@ -1,7 +1,7 @@
 name = "QuantumDynamicInconsistencyModels"
 uuid = "0ed30ee8-6cef-4eac-8e89-7848059aa71e"
 authors = ["itsdfish"]
-version = "0.3.0"
+version = "0.3.1"
 
 [deps]
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
