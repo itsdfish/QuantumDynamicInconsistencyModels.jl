@@ -1,6 +1,10 @@
 # QuantumDynamicInconsistencyModels
 
-[![Build Status](https://github.com/itsdfish/QuantumDynamicInconsistencyModels.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/itsdfish/QuantumDynamicInconsistencyModels.jl/actions/workflows/CI.yml?query=branch%3Amain)
+[![CI](https://github.com/itsdfish/DynamicInconsistencyModels.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/itsdfish/DynamicInconsistencyModels.jl/actions/workflows/CI.yml) [![CodeCov][codecov-img]][codecov-url] 
+
+[codecov-img]: https://codecov.io/github/itsdfish/DynamicInconsistencyModels.jl/badge.svg?branch=main
+[codecov-url]: https://codecov.io/github/itsdfish/DynamicInconsistencyModels.jl?branch=main
+
 
 A quantum cognition model of violations of dynamic consistency in decision making.
 
