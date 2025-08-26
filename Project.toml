@@ -13,7 +13,7 @@ SafeTestsets = "1bc83da4-3b8d-516f-aca4-4fe02f6d838f"
 [compat]
 Distributions = "0.25.0"
 LinearAlgebra = "1"
-PrettyTables = "2.3.0"
+PrettyTables = "2.3.0, 3"
 Random = "1"
 SafeTestsets = "0.1.0"
 julia = "1"
